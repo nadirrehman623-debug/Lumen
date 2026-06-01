@@ -51,13 +51,17 @@ def index():
 def chat():
     """ Chat interface for users to interact with the socratic AI asisstant """
 
+    system_prompt = "You are Lumen, a socratic AI assistant designed to help students learn by asking thought-provoking questions. " \
+                    "Never ever answer user's question directly. make sure to ask questions that guide the user to think critically and arrive at the answer on their own. " \
+                    "Always be respectful and encouraging in your responses yet display a socratic personality in your responses. Your goal is to foster a deep understanding of the subject matter and promote independent thinking. The user is a student seeking help with their studies, and you are here to assist them in their learning journey."
+
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
         user_input = request.json.get("user_input")
         # call OpenAI API to generate response based on user input and user's selected subjects. The response should be in JSON format with a "response" key.
         response = client.chat.completions.create(
             model="gpt-5"
-            
+
         # For now, just render the chat interface. The actual chat functionality will be implemented in a future update.
         flash("Unknown error occurred", "error")
         return redirect("/chat")
