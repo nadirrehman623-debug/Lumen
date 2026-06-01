@@ -162,6 +162,7 @@ def setup():
     # if the query result is empty render the setup page with the list of valid subjects for the user to choose from
     else:
         return render_template("setup.html", subjects=subjects)
+    print(subjects)
 
 
 @app.route("/dashboard")
