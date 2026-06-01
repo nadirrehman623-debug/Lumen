@@ -38,7 +38,7 @@ def index():
     else:
         rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
         if rows:
-            return redirect("/dashboard")
+            return redirect("/chat")
         else:
             return redirect("/setup")
 
