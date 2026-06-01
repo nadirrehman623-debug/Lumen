@@ -27,8 +27,9 @@ def after_request(response):
 @login_required
 def index():
     """ Index/ homepage """
-
-    return None
+    
+    # User reached route via GET (as by clicking a link or via redirect)
+    return render_template("login.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
