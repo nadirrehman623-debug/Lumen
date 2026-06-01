@@ -36,6 +36,12 @@ def index():
     # User reached route via GET (as by clicking a link or via redirect)
     return render_template("index.html")
 
+@app.route("/chat", methods=["GET", "POST"])
+@login_required
+def chat():
+    """ Chat interface for users to interact with the socratic AI asisstant """
+
+    return None
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
