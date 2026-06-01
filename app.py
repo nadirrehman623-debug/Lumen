@@ -27,7 +27,7 @@ def after_request(response):
 @login_required
 def index():
     """ Index/ homepage """
-    
+
     # User reached route via GET (as by clicking a link or via redirect)
     return render_template("login.html")
 
@@ -95,7 +95,7 @@ def register():
         try:
             db.execute("INSERT INTO users (username, hash) VALUES(?, ?)",
                        request.form.get("username"), hash_pass)
-            return redirect("/")
+            return 200
         except ValueError:
             return 400
 
