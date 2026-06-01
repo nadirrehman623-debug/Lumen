@@ -1,5 +1,5 @@
 from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session, abort
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -43,11 +43,13 @@ def login():
     if request.method == "POST":
         # Ensure username was submitted
         if not request.form.get("username"):
-            return 403
+            flash("Username is required", "error")
+            return render_template("login.html")
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return 403
+            flash("Password is required", "error")
+            return render_template("login.html")
 
         # Query database for username
         rows = db.execute(
@@ -58,7 +60,8 @@ def login():
         if len(rows) != 1 or not check_password_hash(
             rows[0]["hash"], request.form.get("password")
         ):
-            return 403
+            flash("Invalid username or password", "error")
+            return render_template("login.html")
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
@@ -76,17 +79,20 @@ def register():
     """ Register new users """
 
     if request.method == "POST":
-    # Ensure username was submitted
+        # Ensure username was submitted
         if not request.form.get("username"):
-            return 400
+            flash("Username is required", "error")
+            return render_template("register.html")
 
-         # Ensure password was submitted
+        # Ensure password was submitted
         elif not request.form.get("password"):
-            return 400
+            flash("Password is required", "error")
+            return render_template("register.html")
 
         # Ensure conformation match with password
         elif request.form.get("password") != request.form.get("confirmation"):
-            return 400
+            flash("Passwords do not match", "error")
+            return render_template("register.html")
 
         # Generate hash for the password
         hash_pass = generate_password_hash(request.form.get("password"))
@@ -95,9 +101,11 @@ def register():
         try:
             db.execute("INSERT INTO users (username, hash) VALUES(?, ?)",
                        request.form.get("username"), hash_pass)
-            return 200
+            flash("Registration successful! Please log in.", "success")
+            return redirect("/login")
         except ValueError:
-            return 400
+            flash("Username already taken", "error")
+            return render_template("register.html")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
