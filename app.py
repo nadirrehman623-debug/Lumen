@@ -107,6 +107,7 @@ def register():
         except ValueError:
             flash("Username already taken", "error")
             return render_template("register.html")
+            #return redirect("/Setup")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
