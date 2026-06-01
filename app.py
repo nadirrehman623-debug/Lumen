@@ -152,8 +152,14 @@ def logout():
 def setup():
     """ Setup user's account when login for the first time """
 
-    # Make sure this is the user's first time logging in by checking if they have already set up their account
-    return None
+    # Make sure this is the user's first time logging in by checking subjects table with "user_id"
+    rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
+    # if there's subjects associated with the user's account
+    if rows:
+        return redirect("/dashboard")
+    # if the query result is empty render the setup page with the list of valid subjects for the user to choose from
+    else:
+        return render_template("setup.html", subjects=subjects)
 
 
 @app.route("/dashboard")
