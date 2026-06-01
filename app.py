@@ -1,4 +1,5 @@
 from cs50 import SQL
+from openai import OpenAI
 from flask import Flask, flash, redirect, render_template, request, session, abort
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -14,6 +15,9 @@ Session(app)
 
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///Lumen.db")
+
+# Initialize OpenAI client
+client = OpenAI()
 
 # List of all valid subjects for users to choose from when setting up their account
 subjects = ["Math", "Philosophy", "Computer Science", "Biology", "Chemistry",
