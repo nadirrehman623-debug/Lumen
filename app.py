@@ -153,8 +153,7 @@ def logout():
 @login_required
 def setup():
     """ Setup user's account when login for the first time """
-
-    print(subjects)
+    
     # Make sure this is the user's first time logging in by checking subjects table with "user_id"
     rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
     # if there's subjects associated with the user's account

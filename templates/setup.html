@@ -6,11 +6,10 @@
 
 {% block main %}
     <h1>Setup</h1>
-    <p>Please select your subjects:</p>
+    <p>Please select at least one subject:</p>
     <form action="/setup" method="post">
         {% for subject in subjects %}
             <div>
-                {{ subjects }}
                 <input type="checkbox" name="subjects" value="{{ subject }}" id="{{ subject }}">
                 <label for="{{ subject }}">{{ subject }}</label>
             </div>
