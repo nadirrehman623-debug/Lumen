@@ -36,7 +36,7 @@ def index():
         # User reached route via GET (as by clicking a link or via redirect)
         return render_template("index.html")
     else:
-        return render_template("setup.html")
+        return redirect("/setup")
 
 #@app.route("/chat", methods=["GET", "POST"])
 #@login_required
@@ -155,6 +155,19 @@ def logout():
 @login_required
 def setup():
     """ Setup user's account when login for the first time """
+
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        # Ensure subject was submitted
+        if not request.form.get("subject"):
+            flash("Subject is required", "error")
+            return render_template("setup.html", subjects=subjects)
+
+        # Insert the user's chosen subject into the subjects table in the database
+        db.execute("INSERT INTO subjects (user_id, subject) VALUES(?, ?)",
+                   session["user_id"], request.form.get("subject"))
+
+        flash("Account setup successful! You can now start chatting with Lumen.", "success")
 
     # Make sure this is the user's first time logging in by checking subjects table with "user_id"
     rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
