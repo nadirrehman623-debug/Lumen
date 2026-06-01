@@ -124,8 +124,10 @@ def register():
         try:
             db.execute("INSERT INTO users (username, hash) VALUES(?, ?)",
                        request.form.get("username"), hash_pass)
-            flash("Registration successful! Please log in.", "success")
-            return redirect("/login")
+            flash("Registration successful! Please setup your account.", "success")
+            # Log the user in by remembering their user_id in session
+            session["user_id"] = rows[0]["id"]
+            return redirect("/setup")
         except ValueError:
             flash("Username already taken", "error")
             return render_template("register.html")
