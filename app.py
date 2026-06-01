@@ -158,25 +158,26 @@ def setup():
 
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
+
         # Ensure subject was submitted
         if not request.form.get("subject"):
             flash("Subject is required", "error")
             return render_template("setup.html", subjects=subjects)
 
-        # Insert the user's chosen subject into the subjects table in the database
-        db.execute("INSERT INTO subjects (user_id, subject) VALUES(?, ?)",
-                   session["user_id"], request.form.get("subject"))
+        
 
         flash("Account setup successful! You can now start chatting with Lumen.", "success")
 
-    # Make sure this is the user's first time logging in by checking subjects table with "user_id"
-    rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
-    # if there's subjects associated with the user's account
-    if rows:
-        return redirect("/dashboard")
-    # if the query result is empty render the setup page with the list of valid subjects for the user to choose from
     else:
-        return render_template("setup.html", subjects=subjects)
+        # Make sure this is the user's first time logging in by checking subjects table with "user_id"
+        rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
+
+        # if there's subjects associated with the user's account
+        if rows:
+            return redirect("/dashboard")
+        # if the query result is empty render the setup page with the list of valid subjects for the user to choose from
+        else:
+            return render_template("setup.html", subjects=subjects)
 
 
 @app.route("/dashboard")
