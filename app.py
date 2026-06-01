@@ -38,19 +38,21 @@ def index():
     else:
         return redirect("/chat")
 
-@app.route("/chat", methods=["GET", "POST"])
-@login_required
-def chat():
-    """ Chat interface for users to interact with the socratic AI asisstant """
+#@app.route("/chat", methods=["GET", "POST"])
+#@login_required
+#def chat():
+   # """ Chat interface for users to interact with the socratic AI asisstant """
 
     # User reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
+   # if request.method == "POST":
         # For now, just render the chat interface. The actual chat functionality will be implemented in a future update.
-        return None
+     #   flash("Unknown error occurred", "error")
+     #   return redirect("/")
 
-    else:
+   # else:
     # For now, just render the chat interface. The actual chat functionality will be implemented in a future update.
-    return None
+     #   flash("Unknown error occurred", "error")
+     #   return redirect("/")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():

@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Setup
+{% endblock %}
+
+{% block main %}
+    <h1>Setup</h1>
+    <p>Please select your subjects:</p>
+    <form method="post">
+        {% for subject in subjects %}
+            <div>
+                <input type="checkbox" name="subjects" value="{{ subject }}" id="{{ subject }}">
+                <label for="{{ subject }}">{{ subject }}</label>
+            </div>
+        {% endfor %}
+        <button type="submit">Submit</button>
+    </form>
+{% endblock %}
