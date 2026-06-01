@@ -51,12 +51,11 @@ def chat():
     if request.method == "POST":
         # For now, just render the chat interface. The actual chat functionality will be implemented in a future update.
         flash("Unknown error occurred", "error")
-        return redirect("/")
+        return redirect("/chat")
 
     else:
      # For now, just render the chat interface. The actual chat functionality will be implemented in a future update.
-        flash("Unknown error occurred", "error")
-        return redirect("/")
+        return render_template("chat.html")
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
