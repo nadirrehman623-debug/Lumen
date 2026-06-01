@@ -36,7 +36,11 @@ def index():
         # User reached route via GET (as by clicking a link or via redirect)
         return render_template("index.html")
     else:
-        return redirect("/setup")
+        rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
+        if rows:
+            return redirect("/dashboard")
+        else:
+            return redirect("/setup")
 
 #@app.route("/chat", methods=["GET", "POST"])
 #@login_required
@@ -188,4 +192,4 @@ def setup():
 def dashboard():
     """ Display user stats """
 
-    return None
+    return redirect("/")
