@@ -32,14 +32,24 @@ def after_request(response):
 def index():
     """ Index/ homepage """
 
-    # User reached route via GET (as by clicking a link or via redirect)
-    return render_template("index.html")
+    if session.get("user_id") is None:
+        # User reached route via GET (as by clicking a link or via redirect)
+        return render_template("index.html")
+    else:
+        return redirect("/chat")
 
 @app.route("/chat", methods=["GET", "POST"])
 @login_required
 def chat():
     """ Chat interface for users to interact with the socratic AI asisstant """
 
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        # For now, just render the chat interface. The actual chat functionality will be implemented in a future update.
+        return None
+
+    else:
+    # For now, just render the chat interface. The actual chat functionality will be implemented in a future update.
     return None
 
 @app.route("/login", methods=["GET", "POST"])
@@ -142,8 +152,7 @@ def logout():
 def setup():
     """ Setup user's account when login for the first time """
 
-
-
+    # Make sure this is the user's first time logging in by checking if they have already set up their account
     return None
 
 
