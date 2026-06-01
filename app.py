@@ -46,9 +46,19 @@ def index():
         else:
             return redirect("/setup")
 
-@app.route("/chat", methods=["GET", "POST"])
+
+@app.route("/chat/history")
 @login_required
-def chat():
+def chat_history():
+    """ View chat history """
+
+    # Implementation for viewing chat history
+    pass
+
+
+@app.route("/chat/new", methods=["GET", "POST"])
+@login_required
+def chat_new():
     """ Chat interface for users to interact with the socratic AI asisstant """
 
     system_prompt = "You are Lumen, a socratic AI assistant designed to help students learn by asking thought-provoking questions. " \
@@ -73,11 +83,21 @@ def chat():
 
         # For now, just render the chat interface. The actual chat functionality will be implemented in a future update.
         flash("Unknown error occurred", "error")
-        return redirect("/chat")
+        return redirect("/chat/new")
 
     else:
      # For now, just render the chat interface. The actual chat functionality will be implemented in a future update.
-        return render_template("chat.html")
+        return render_template("chat_interface.html")
+
+
+@app.route("/chat/<session_id>", methods=["GET", "POST"])
+@login_required
+def chat_session(session_id):
+    """ View a specific chat session """
+
+    # Implementation for viewing a specific chat session
+    pass
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
