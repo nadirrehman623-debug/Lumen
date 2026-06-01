@@ -126,7 +126,7 @@ def register():
                        request.form.get("username"), hash_pass)
             flash("Registration successful! Please setup your account.", "success")
             # Log the user in by remembering their user_id in session
-            session["user_id"] = rows[0]["id"]
+            session["user_id"] = db.execute("SELECT id FROM users WHERE username = ?", request.form.get("username"))[0]["id"]
             return redirect("/setup")
         except ValueError:
             flash("Username already taken", "error")
