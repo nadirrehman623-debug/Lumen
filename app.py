@@ -36,7 +36,7 @@ def index():
         # User reached route via GET (as by clicking a link or via redirect)
         return render_template("index.html")
     else:
-        return redirect("/chat")
+        return render_template("setup.html")
 
 #@app.route("/chat", methods=["GET", "POST"])
 #@login_required
