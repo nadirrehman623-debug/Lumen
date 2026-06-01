@@ -29,7 +29,6 @@ def after_request(response):
     return response
 
 @app.route("/")
-@login_required
 def index():
     """ Index/ homepage """
 
