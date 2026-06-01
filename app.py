@@ -149,7 +149,7 @@ def logout():
     return redirect("/")
 
 
-@app.route("/Setup", methods=["GET", "POST"])
+@app.route("/setup", methods=["GET", "POST"])
 @login_required
 def setup():
     """ Setup user's account when login for the first time """
