@@ -1,2 +1,3 @@
-# Lumen
-AI-powered study companion with dynamic system prompts, Socratic discussion sessions, and cross-subject idea mapping. 
+# YOUR PROJECT TITLE
+#### Video Demo:  <URL HERE>
+#### Description: An AI powered study partner, user's can input subjects to study with an intial dynamic prompt. 
