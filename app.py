@@ -132,6 +132,8 @@ def logout():
 def setup():
     """ Setup user's account when login for the first time """
 
+    
+
     return None
 
 
