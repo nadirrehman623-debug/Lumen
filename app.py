@@ -163,13 +163,14 @@ def setup():
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # Ensure subject was submitted
-        if not request.form.get("subject"):
+        # Ensure at least one subject was submitted
+        selected_subjects = request.form.getlist("subjects")
+        if not selected_subjects:
             flash("Subject is required", "error")
             return render_template("setup.html", subjects=subjects)
 
         # Insert all the subjects the user selected into the subjects table with the user's id
-        for subject in request.form.getlist("subject"):
+        for subject in selected_subjects:
             db.execute("INSERT INTO subjects (user_id, subject) VALUES(?, ?)", session["user_id"], subject)
 
         flash("Account setup successful! You can now start chatting with Lumen.", "success")
