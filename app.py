@@ -164,9 +164,12 @@ def setup():
             flash("Subject is required", "error")
             return render_template("setup.html", subjects=subjects)
 
-        
+        # Insert all the subjects the user selected into the subjects table with the user's id
+        for subject in request.form.getlist("subject"):
+            db.execute("INSERT INTO subjects (user_id, subject) VALUES(?, ?)", session["user_id"], subject)
 
         flash("Account setup successful! You can now start chatting with Lumen.", "success")
+        return redirect("/dashboard")
 
     else:
         # Make sure this is the user's first time logging in by checking subjects table with "user_id"
