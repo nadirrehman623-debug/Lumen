@@ -15,6 +15,11 @@ Session(app)
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///Lumen.db")
 
+# List of all valid subjects for users to choose from when setting up their account
+subjects = ["Math", "Philosophy", "Computer Science", "Biology", "Chemistry",
+            "Physics", "History", "Literature", "Linguistics"]
+
+# Ensure responses aren't cached
 @app.after_request
 def after_request(response):
     """Ensure responses aren't cached"""
@@ -29,7 +34,7 @@ def index():
     """ Index/ homepage """
 
     # User reached route via GET (as by clicking a link or via redirect)
-    return render_template("login.html")
+    return render_template("index.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -132,7 +137,7 @@ def logout():
 def setup():
     """ Setup user's account when login for the first time """
 
-    
+
 
     return None
 
