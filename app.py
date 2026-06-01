@@ -53,6 +53,8 @@ def chat():
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
+        user_input = request.json.get("user_input")
+        
         # For now, just render the chat interface. The actual chat functionality will be implemented in a future update.
         flash("Unknown error occurred", "error")
         return redirect("/chat")
