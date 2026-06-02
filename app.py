@@ -115,6 +115,7 @@ def chat_session(session_id):
             return redirect(f"/chat/{session_id}")
         user_input = request.json.get("user_input")
         chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
+        
         if not chat_history:
             summary = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
@@ -123,6 +124,7 @@ def chat_session(session_id):
                     {"role": "user", "content": f"Summarize the following conversation in 5 words based on {user_input} if the input is irrelevant to {selected_subject}, respond with 'irrelevant input': {user_input}"}
                 ]
             )
+            # if the summary response is "irrelevant input"
             if summary.choices[0].message.content == "irrelevant input":
                 response = client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
@@ -131,23 +133,24 @@ def chat_session(session_id):
                         {"role": "user", "content": f"Respond with a gentle reminder to stay focused on their studies and ask if they have any questions related to the {selected_subject} since the user input is irrelevant to their studies: {user_input}"}
                     ]
                 )
-                flash("Lumen: " + response.choices[0].message.content, "info")
-                return redirect(f"/chat/{session_id}")
-            else:
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
                 flash("Lumen: " + response.choices[0].message.content, "info")
                 return redirect(f"/chat/{session_id}")
-            # insert summary into sessions table with the session_id
-            db.execute("UPDATE sessions SET summary = ? WHERE id = ?", summary.choices[0].message.content, session_id)
-            # insert user input and AI response into messages table with the session_id
-            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
-            return redirect(f"/chat/{session_id}")
+            # otherwise, insert the summary into the sessions table and continue with the conversation as normal
+            else:
+                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
+                # insert summary into sessions table with the session_id
+                db.execute("UPDATE sessions SET summary = ? WHERE id = ?", summary.choices[0].message.content, session_id)
+                # insert user input and AI response into messages table with the session_id
+                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
+                return redirect(f"/chat/{session_id}")
+        # otherwise, when there is chat history
         else:
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": {user_input}},
+                    {"role": "user", "content": user_input},
                 ]
             )
 
