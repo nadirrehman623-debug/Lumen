@@ -96,11 +96,16 @@ def chat_history():
 def chat_session(session_id):
     """ View a specific chat session """
 
+    # check if the session_id is valid and belongs to the current user
+    if not db.execute("SELECT * FROM sessions WHERE id = ? AND user_id = ?", session_id, session["user_id"]):
+        abort(404)
+
+    # get the selected subject for the current chat session from sessions table with the session_id
     selected_subject = db.execute(
         "SELECT subject FROM sessions WHERE id = ?", session_id)
 
-    system_prompt = (f"You are Lumen, a socratic AI assistant designed to help students learn by asking thought-provoking questions. "
-                     f"You have access to the user's selected subject for this session, which is {selected_subject}. "
+    # create a system prompt for the AI agent to follow based on the selected subject for the current chat session
+    system_prompt = (f"You are Lumen, a socratic AI assistant designed to help students learn by asking thought-provoking questions. You have access to the user's selected subject for this session, which is {selected_subject}. "
                      f"You must never answer user's question directly. make sure to ask questions that guide the user to think critically and arrive at the answer on their own. "
                      f"Always be respectful and encouraging in your responses yet display a socratic personality in your responses. Your goal is to foster a deep understanding of the subject matter and promote independent thinking. "
                      f"The user is a student seeking help with their studies, and you are here to assist them in their learning journey. if the user asks you a question urelated to the current subjects they are studying, "
@@ -117,7 +122,7 @@ def chat_session(session_id):
         user_input = request.json.get("user_input")
         chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
 
-        # if there is no chat history, summarize the first message from the user
+        # if there is no chat history, ask the agent to summarize the first message from the user
         if not chat_history:
             summary = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
@@ -126,6 +131,7 @@ def chat_session(session_id):
                     {"role": "user", "content": f"Summarize the following conversation in 5 words based on {user_input} if the input is irrelevant to {selected_subject}, respond with 'irrelevant input': {user_input}"}
                 ]
             )
+
             # if the summary response is "irrelevant input"
             if summary.choices[0].message.content == "irrelevant input":
                 response = client.chat.completions.create(
@@ -138,16 +144,25 @@ def chat_session(session_id):
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
                 flash("Lumen: " + response.choices[0].message.content, "info")
                 return redirect(f"/chat/{session_id}")
+
             # otherwise, insert the summary into the sessions table and continue with the conversation as normal
             else:
-                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
                 # insert summary into sessions table with the session_id
                 db.execute("UPDATE sessions SET summary = ? WHERE id = ?", summary.choices[0].message.content, session_id)
+                # 
+                response = client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_input},
+                    ]
+                )
+
                 # insert user input and AI response into messages table with the session_id
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
                 return redirect(f"/chat/{session_id}")
-        
-        # otherwise, when there is chat history
+
+        # otherwise, when there is chat history, insert the user input and AI response into messages and continue with the conversation as normal
         else:
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
