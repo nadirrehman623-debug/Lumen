@@ -123,6 +123,17 @@ def chat_session(session_id):
                     {"role": "user", "content": f"Summarize the following conversation in 5 words based on {user_input} if the input is irrelevant to {selected_subject}, respond with 'irrelevant input': {user_input}"}
                 ]
             )
+            if summary.choices[0].message.content == "irrelevant input":
+                response = client.chat.completions.create(
+                    model="llama-3.3-70b-versatile",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": f"Respond with a gentle reminder to stay focused on their studies and ask if they have any questions related to the subjects they are studying based on the following user input: {user_input}"}
+                    ]
+                )
+                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
+                flash("Lumen: " + response.choices[0].message.content, "info")
+                return redirect(f"/chat/{session_id}")
             # insert summary into sessions table with the session_id
             db.execute("UPDATE sessions SET summary = ? WHERE id = ?", summary.choices[0].message.content, session_id)
             # insert user input and AI response into messages table with the session_id
