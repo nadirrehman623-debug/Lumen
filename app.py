@@ -336,4 +336,5 @@ def setup():
 def dashboard():
     """ Display user stats """
 
-    return redirect("/")
+   # to be implemented in the future, currently just redirecting to chat history page
+    return redirect("/chat/history")
