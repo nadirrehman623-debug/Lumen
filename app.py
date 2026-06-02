@@ -1,3 +1,5 @@
+import os
+
 from cs50 import SQL
 from openai import OpenAI
 from flask import Flask, flash, redirect, render_template, request, session, abort
@@ -17,7 +19,10 @@ Session(app)
 db = SQL("sqlite:///Lumen.db")
 
 # Initialize OpenAI client
-client = OpenAI()
+client = OpenAI(
+    api_key=os.environ["GROQ_API_KEY"],
+    base_url="https://api.groq.com/openai/v1"
+)
 
 # List of all valid subjects for users to choose from when setting up their account
 subjects = ["Math", "Philosophy", "Computer Science", "Biology", "Chemistry",
@@ -42,18 +47,39 @@ def index():
     else:
         rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
         if rows:
-            return redirect("/chat")
+            return redirect("/chat/history")
         else:
             return redirect("/setup")
 
 
-@app.route("/chat/history")
+@app.route("/chat/history", methods=["GET", "POST"])
 @login_required
 def chat_history():
-    """ View chat history """
+    """ Display chat history """
 
-    # Implementation for viewing chat history
-    pass
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        selected_subject = request.form.get("subject")
+        if not selected_subject:
+            flash("Subject is required", "error")
+            chat_sessions = db.execute("SELECT * FROM sessions WHERE user_id = ?", session["user_id"])
+            return render_template("chat_history.html", subjects=subjects, chat_sessions=chat_sessions)
+
+        # if the selected subject is in subjects table with current user's id, then add new chat session to sessions table
+        if db.execute("SELECT * FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject):
+            db.execute("INSERT INTO sessions (user_id, subject_id) VALUES(?, ?)", session["user_id"], db.execute("SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject)[0]["id"])
+        # if the selected subject is not in subjects table with current user's id
+        else:
+            db.execute("INSERT INTO subjects (user_id, subject) VALUES(?, ?)", session["user_id"], selected_subject)
+            db.execute("INSERT INTO sessions (user_id, subject_id) VALUES(?, ?)", session["user_id"], db.execute("SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject)[0]["id"])
+
+        flash("New chat session started!", "success")
+        return redirect("/chat/new")
+
+    # if the user reached route via GET (as by clicking a link or via redirect)
+    else:
+        chat_sessions = db.execute("SELECT * FROM sessions WHERE user_id = ?", session["user_id"])
+        return render_template("chat_history.html", subjects=subjects, chat_sessions=chat_sessions)
 
 
 @app.route("/chat/new", methods=["GET", "POST"])
@@ -61,9 +87,9 @@ def chat_history():
 def chat_new():
     """ Chat interface for users to interact with the socratic AI asisstant """
 
-    system_prompt = "You are Lumen, a socratic AI assistant designed to help students learn by asking thought-provoking questions. " \
-                    "You have access to the user's selected subject for this session, which is " \
-                    "Never ever answer user's question directly. make sure to ask questions that guide the user to think critically and arrive at the answer on their own. " \
+    system_prompt = f"You are Lumen, a socratic AI assistant designed to help students learn by asking thought-provoking questions. " \
+                    "You have access to the user's selected subject for this session, which is {selected_subject}. " \
+                    "You must never answer user's question directly. make sure to ask questions that guide the user to think critically and arrive at the answer on their own. " \
                     "Always be respectful and encouraging in your responses yet display a socratic personality in your responses. Your goal is to foster a deep understanding of the subject matter and promote independent thinking. " \
                     "The user is a student seeking help with their studies, and you are here to assist them in their learning journey. if the user asks you a question urelated to the current subjects they are studying, " \
                     "respond with a gentle reminder to stay focused on their studies and ask if they have any questions related to the subjects they are studying. also if the user asks you to directly answer their question, " \
@@ -74,7 +100,7 @@ def chat_new():
         user_input = request.json.get("user_input")
         # call OpenAI API to generate response based on user input and user's selected subjects. The response should be in JSON format with a "response" key.
         response = client.chat.completions.create(
-            model="gpt-5",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_input}
@@ -83,11 +109,18 @@ def chat_new():
 
         # For now, just render the chat interface. The actual chat functionality will be implemented in a future update.
         flash("Unknown error occurred", "error")
-        return redirect("/chat/new")
+        return redirect("/chat/new", response=response.choices[0].message.content)
 
+    # User reached route via GET (as by clicking a link or via redirect)
     else:
-     # For now, just render the chat interface. The actual chat functionality will be implemented in a future update.
-        return render_template("chat_interface.html")
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": "Greet the user and ask how you can assist them with their studies today."}
+            ]
+        )
+        return render_template("chat_interface.html", response=response.choices[0].message.content)
 
 
 @app.route("/chat/<session_id>", methods=["GET", "POST"])
@@ -95,8 +128,14 @@ def chat_new():
 def chat_session(session_id):
     """ View a specific chat session """
 
+    # if user reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        # Implementation for handling user input and generating response for a specific chat session
+        pass
+
     # Implementation for viewing a specific chat session
-    pass
+    else:
+        return render_template("chat_session.html", session_id=session_id)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -167,7 +206,7 @@ def register():
 
         # Check if username already taken
         try:
-            db.execute("INSERT INTO users (username, hash) VALUES(?, ?)",
+            db.execute("INSERT INTO users (username, password_hash) VALUES(?, ?)",
                        request.form.get("username"), hash_pass)
             flash("Registration successful! Please setup your account.", "success")
             # Log the user in by remembering their user_id in session
