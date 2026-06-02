@@ -128,9 +128,12 @@ def chat_session(session_id):
                     model="llama-3.3-70b-versatile",
                     messages=[
                         {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": f"Respond with a gentle reminder to stay focused on their studies and ask if they have any questions related to the subjects they are studying based on the following user input: {user_input}"}
+                        {"role": "user", "content": f"Respond with a gentle reminder to stay focused on their studies and ask if they have any questions related to the {selected_subject} since the user input is irrelevant to their studies: {user_input}"}
                     ]
                 )
+                flash("Lumen: " + response.choices[0].message.content, "info")
+                return redirect(f"/chat/{session_id}")
+            else:
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
                 flash("Lumen: " + response.choices[0].message.content, "info")
                 return redirect(f"/chat/{session_id}")
