@@ -149,7 +149,7 @@ def chat_session(session_id):
             else:
                 # insert summary into sessions table with the session_id
                 db.execute("UPDATE sessions SET summary = ? WHERE id = ?", summary.choices[0].message.content, session_id)
-                # 
+                # continue with the conversation as normal and get the AI response based on the user input and system prompt
                 response = client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
                     messages=[
@@ -157,7 +157,6 @@ def chat_session(session_id):
                         {"role": "user", "content": user_input},
                     ]
                 )
-
                 # insert user input and AI response into messages table with the session_id
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
                 return redirect(f"/chat/{session_id}")
