@@ -139,13 +139,16 @@ def chat_session(session_id):
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": "Greet the user and ask how you can assist them with their studies today."}
-            ]
-        )
+        # Only greet the user if there is no field in messages table for current session_id
+        if not db.execute("SELECT * FROM messages WHERE session_id = ?", session_id):
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": "Greet the user and ask how you can assist them with their studies today."}
+                ]
+            )
+            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
         # get chat history from messages table with the session_id and render the chat interface
         chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
         return render_template("chat_interface.html", session_id=session_id, response=response.choices[0].message.content)
