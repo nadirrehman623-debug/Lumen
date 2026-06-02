@@ -147,8 +147,9 @@ def chat_session(session_id):
 
             # otherwise, insert the summary into the sessions table and continue with the conversation as normal
             else:
-                # insert summary into sessions table with the session_id
+                # insert summary into sessions table and user's input and AI response into the messages table with the session_id
                 db.execute("UPDATE sessions SET summary = ? WHERE id = ?", summary.choices[0].message.content, session_id)
+                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
                 # continue with the conversation as normal and get the AI response based on the user input and system prompt
                 response = client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
@@ -157,8 +158,8 @@ def chat_session(session_id):
                         {"role": "user", "content": user_input},
                     ]
                 )
-                # insert user input and AI response into messages table with the session_id
-                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
+                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
+                flash("Lumen: " + response.choices[0].message.content, "info")
                 return redirect(f"/chat/{session_id}")
 
         # otherwise, when there is chat history, insert the user input and AI response into messages and continue with the conversation as normal
