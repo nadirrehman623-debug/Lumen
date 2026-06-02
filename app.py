@@ -198,7 +198,7 @@ def chat_session(session_id):
         # get chat history from messages table with the session_id and render the chat interface
         else:
             chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
-            return render_template("chat_interface.html", session_id=session_id, response=response.choices[0].message.content, chat_history=chat_history)
+            return render_template("chat_interface.html", session_id=session_id, chat_history=chat_history)
 
 
 @app.route("/login", methods=["GET", "POST"])
