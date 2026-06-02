@@ -113,9 +113,11 @@ def chat_session(session_id):
         if not request.json.get("user_input"):
             flash("User input is required", "error")
             return redirect(f"/chat/{session_id}")
+
         user_input = request.json.get("user_input")
         chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
-        
+
+        # if there is no chat history, summarize the first message from the user
         if not chat_history:
             summary = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
@@ -144,6 +146,7 @@ def chat_session(session_id):
                 # insert user input and AI response into messages table with the session_id
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
                 return redirect(f"/chat/{session_id}")
+        
         # otherwise, when there is chat history
         else:
             response = client.chat.completions.create(
