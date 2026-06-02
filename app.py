@@ -73,6 +73,7 @@ def chat_history():
         if db.execute("SELECT * FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject):
             db.execute("INSERT INTO sessions (user_id, subject_id, subject) VALUES(?, ?, ?)", session["user_id"], db.execute(
                 "SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject)[0]["id"], selected_subject)
+
         # if the selected subject is not in subjects table with current user's id
         else:
             db.execute("INSERT INTO subjects (user_id, subject) VALUES(?, ?)",
