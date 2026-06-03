@@ -6,13 +6,6 @@
 
 {% block main %}
     <h1 class="text-center">Chat Interface</h1>
-    <form method="post" action="/chat/{{ session_id }}" id="chat-form">
-        <div class="mb-3">
-            <label for="user-input" class="form-label">Your Message:</label>
-            <input type="text" class="form-control" id="user-input" name="user_input" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Send</button>
-    </form>
     <div id="chat-history" class="mt-4">
          {% for message in chat_history %}
         <div class="message {{ message.role }}">
@@ -20,6 +13,13 @@
         </div>
         {% endfor %}
     </div>
+    <form method="post" action="/chat/{{ session_id }}" id="chat-form">
+        <div class="mb-3">
+            <label for="user-input" class="form-label">Your Message:</label>
+            <input type="text" class="form-control" id="user-input" name="user_input" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
     <script>
         const chatForm = document.getElementById('chat-form');
         const chatHistory = document.getElementById('chat-history');
