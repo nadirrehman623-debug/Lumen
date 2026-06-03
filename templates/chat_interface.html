@@ -16,10 +16,38 @@
     </form>
     <div id="chat-history" class="mt-4">
         <!-- Chat history will be displayed here -->
-        
+
     </div>
     <script>
         const chatForm = document.getElementById('chat-form');
         const chatHistory = document.getElementById('chat-history');
+        const sessionId = "{{ session_id }}";
+
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();  // stop the form from reloading the page
+
+            const userInput = document.getElementById('user-input').value;
+
+            fetch(`/chat/${sessionId}`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({user_input: userInput})
+            })
+            .then(response => response.json())
+            .then(data => {
+                // append user message
+                const userDiv = document.createElement('div');
+                userDiv.innerText = `You: ${userInput}`;
+                chatHistory.appendChild(userDiv);
+
+                // append AI response
+                const aiDiv = document.createElement('div');
+                aiDiv.innerText = `Lumen: ${data.ai_response}`;
+                chatHistory.appendChild(aiDiv);
+
+                // clear input field
+                document.getElementById('user-input').value = '';
+            })
+        });
     </script>
 {% endblock %}
