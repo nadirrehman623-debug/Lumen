@@ -125,7 +125,7 @@ def chat_session(session_id):
         chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
 
         # if there is no chat history, ask the agent to summarize the first message from the user
-        if :
+        if len(chat_history) == 1 and chat_history[0]["role"] == "assistant":
             summary = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[
