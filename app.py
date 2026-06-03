@@ -190,7 +190,8 @@ def chat_session(session_id):
                 ]
             )
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
-            return render_template("chat_interface.html", session_id=session_id, response=response.choices[0].message.content)
+            chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
+            return render_template("chat_interface.html", session_id=session_id, chat_history=chat_history)
 
         # get chat history from messages table with the session_id and render the chat interface
         else:

@@ -6,7 +6,6 @@
 
 {% block main %}
     <h1 class="text-center">Chat Interface</h1>
-    <p class="response">{{ response }}</p>
     <form method="post" action="/chat/{{ session_id }}" id="chat-form">
         <div class="mb-3">
             <label for="user-input" class="form-label">Your Message:</label>
