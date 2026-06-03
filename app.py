@@ -2,7 +2,7 @@ import os
 
 from cs50 import SQL
 from openai import OpenAI
-from flask import Flask, flash, redirect, render_template, request, session, abort
+from flask import Flask, flash, redirect, render_template, request, session, abort, jsonify
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -118,8 +118,8 @@ def chat_session(session_id):
     if request.method == "POST":
         # check if user input is in the request form
         if not request.json.get("user_input"):
-            flash("User input is required", "error")
-            return redirect(f"/chat/{session_id}")
+            return jsonify({
+    "ai_response": "User input is required"}), 400
 
         user_input = request.json.get("user_input")
         chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
@@ -145,8 +145,7 @@ def chat_session(session_id):
                 )
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
-                flash("Lumen: " + response.choices[0].message.content, "info")
-                return redirect(f"/chat/{session_id}")
+                return jsonify({"ai_response": response.choices[0].message.content}), 200
 
             # otherwise, insert the summary into the sessions table and continue with the conversation as normal
             else:
@@ -162,8 +161,7 @@ def chat_session(session_id):
                     ]
                 )
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
-                flash("Lumen: " + response.choices[0].message.content, "info")
-                return redirect(f"/chat/{session_id}")
+                return jsonify({"ai_response": response.choices[0].message.content}), 200
 
         # otherwise, when there is chat history, insert the user input and AI response into messages and continue with the conversation as normal
         else:
@@ -176,8 +174,7 @@ def chat_session(session_id):
             )
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
-            flash("Lumen: " + response.choices[0].message.content, "info")
-            return redirect(f"/chat/{session_id}")
+            return jsonify({"ai_response": response.choices[0].message.content}), 200
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
