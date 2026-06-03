@@ -62,32 +62,52 @@ def chat_history():
 
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
+
+        # Get user's selected subject
         selected_subject = request.form.get("subject")
+
         if not selected_subject:
             flash("Subject is required", "error")
-            chat_sessions = db.execute(
-                "SELECT * FROM sessions WHERE user_id = ?", session["user_id"])
-            return render_template("chat_history.html", subjects=subjects, chat_sessions=chat_sessions)
+            return redirect("/chat/history")
 
-        # if the selected subject is in subjects table with current user's id, then add new chat session to sessions table
+        # if the selected subject is in subjects table
         if db.execute("SELECT * FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject):
-            db.execute("INSERT INTO sessions (user_id, subject_id, subject) VALUES(?, ?, ?)", session["user_id"], db.execute(
-                "SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject)[0]["id"], selected_subject)
+            # Add NEW chat session to sessions table
+            db.execute("INSERT INTO sessions (user_id, subject_id) VALUES(?, ?)", session["user_id"],
+            db.execute("SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"],
+                       selected_subject)[0]["id"])
+
+            flash("New chat session started","success")
+
+            # Get the ID of the row we JUST inserted
+            session_id = db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
+
+            return redirect(f"/chat/{session_id}")
 
         # if the selected subject is not in subjects table with current user's id
         else:
             db.execute("INSERT INTO subjects (user_id, subject) VALUES(?, ?)",
                        session["user_id"], selected_subject)
-            db.execute("INSERT INTO sessions (user_id, subject_id, subject) VALUES(?, ?, ?)", session["user_id"], db.execute(
-                "SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject)[0]["id"], selected_subject)
 
-        flash("New chat session started!", "success")
-        session_id = db.execute("SELECT id FROM sessions WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject)
-        return redirect(f"/chat/{session_id[0]['id']}")
+            db.execute("INSERT INTO sessions (user_id, subject_id) VALUES(?, ?)", session["user_id"], db.execute(
+                "SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject)[0]["id"])
+
+            flash("New chat session started!", "success")
+
+            # Get the ID of the row we JUST inserted
+            session_id = db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
+
+            return redirect(f"/chat/{session_id}")
 
     # if the user reached route via GET (as by clicking a link or via redirect)
     else:
+        # query for all sessions to display
         chat_sessions = db.execute("SELECT * FROM sessions WHERE user_id = ?", session["user_id"])
+
+        # get the subject for each chat session from subjects table and add it to the chat_sessions list
+        for chat_session in chat_sessions:
+            chat_session["subject"] = db.execute("SELECT subject FROM subjects WHERE id = ?", chat_session["subject_id"])[0]["subject"]
+
         return render_template("chat_history.html", subjects=subjects, chat_sessions=chat_sessions)
 
 
@@ -102,56 +122,68 @@ def chat_session(session_id):
         abort(404)
 
     # get the selected subject for the current chat session from sessions table with the session_id
-    selected_subject = db.execute(
-        "SELECT subject FROM sessions WHERE id = ?", session_id)
+    selected_subject = db.execute("SELECT subject FROM subjects WHERE id = ?",
+                       db.execute("SELECT subject_id FROM sessions WHERE id = ?", session_id)[0]["subject_id"])
 
     # create a system prompt for the AI agent to follow based on the selected subject for the current chat session
     system_prompt = (f"You are Lumen, a socratic AI assistant designed to help students learn by asking thought-provoking questions. You have access to the user's selected subject for this session, which is {selected_subject}. "
-                     f"You must never answer user's question directly. make sure to ask questions that guide the user to think critically and arrive at the answer on their own. "
+                     f"You must never answer user's question directly. make sure to ask questions that guide the user to think critically and arrive at the answer on their own. respond with no more than one question unless the user says otherwise,"
                      f"Always be respectful and encouraging in your responses yet display a socratic personality in your responses. Your goal is to foster a deep understanding of the subject matter and promote independent thinking. "
                      f"The user is a student seeking help with their studies, and you are here to assist them in their learning journey. if the user asks you a question urelated to the current subjects they are studying, "
                      f"respond with a gentle reminder to stay focused on their studies and ask if they have any questions related to the subjects they are studying. also if the user asks you to directly answer their question, "
                      f"respond with a gentle reminder that you are designed to facilitate learning through questioning, not direct answering. Act like socrates in all your responses regardless of the user's tone or behavior, "
-                     f"and always ask questions that forces the user to think crtically about the topic at hand. never break character, be socrates himself, that is your personality.")
+                     f"and always ask questions that forces the user to think crtically about the topic at hand. never break character. Adjust your personality according to the user's tone, and the subject they are studying."
+                     f"Allow user to question about topics that cross two diciplines but keep the user within the current subject and answer him only in the context of the {selected_subject}")
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
         # check if user input is in the request form
         if not request.json.get("user_input"):
-            return jsonify({
-    "ai_response": "User input is required"}), 400
+            return jsonify({"ai_response": "User input is required"}), 400
 
         user_input = request.json.get("user_input")
-        chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
+        summary_status = db.execute("SELECT session_summary FROM sessions WHERE id = ?", session_id)
 
-        # if there is no chat history, ask the agent to summarize the first message from the user
-        if len(chat_history) == 1 and chat_history[0]["role"] == "assistant":
+        # if the summary is NULL then generate summary
+        if summary_status[0]["session_summary"] == None:
             summary = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Summarize the following conversation in 5 words based on {user_input} if the input is irrelevant to {selected_subject}, respond with 'irrelevant input': {user_input}"}
+                    {"role": "user", "content": f"Summarize the following conversation in 5 words based on {user_input}"
+                                                f"if the input is irrelevant to {selected_subject},"
+                                                f"If the topic in user input is such that crosses the lines of two subjects don't return irrelevant"
+                                                f"only respond exactly with the words:'irrelevant input',"
+                                                f"when the user input is not in the scope of the subject"
+                                                f"not when the user's answer is wrong : {user_input}"}
                 ]
             )
 
+            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
+
+            summary_result = summary.choices[0].message.content.lower().strip(".")
+
             # if the summary response is "irrelevant input"
-            if summary.choices[0].message.content == "irrelevant input":
+            if summary_result == "irrelevant input":
+                # Generate a reminder for the user to stay focused on the subject matter
                 response = client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
                     messages=[
                         {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": f"Respond with a gentle reminder to stay focused on their studies and ask if they have any questions related to the {selected_subject} since the user input is irrelevant to their studies: {user_input}"}
+                        {"role": "user", "content": f"Respond with a gentle reminder to stay focused on their studies"
+                                                    f"and ask if they have any questions related to the {selected_subject}"
+                                                    f"since the user input is irrelevant to their studies: {user_input}"}
                     ]
                 )
-                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
+
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
+
                 return jsonify({"ai_response": response.choices[0].message.content}), 200
 
             # otherwise, insert the summary into the sessions table and continue with the conversation as normal
             else:
-                # insert summary into sessions table and user's input and AI response into the messages table with the session_id
                 db.execute("UPDATE sessions SET session_summary = ? WHERE id = ?", summary.choices[0].message.content, session_id)
-                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
+
                 # continue with the conversation as normal and get the AI response based on the user input and system prompt
                 response = client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
@@ -160,20 +192,33 @@ def chat_session(session_id):
                         {"role": "user", "content": user_input},
                     ]
                 )
+
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
                 return jsonify({"ai_response": response.choices[0].message.content}), 200
 
-        # otherwise, when there is chat history, insert the user input and AI response into messages and continue with the conversation as normal
+        # otherwise, when session_summary != NULL, insert the user input and AI response into messages and continue with the conversation as normal
         else:
+            # fetch chat history from messages table
+            chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
+
+            # Build messages list for API
+            messages = [{"role": "system", "content": system_prompt}]
+
+            # Add chat history to messages list
+            for message in chat_history:
+                messages.append({"role": message["role"], "content": message["content"]})
+
+            # Append current user message to messages list
+            messages.append({"role": "user", "content": user_input})
+
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_input},
-                ]
+                messages=messages
             )
+
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
+
             return jsonify({"ai_response": response.choices[0].message.content}), 200
 
     # User reached route via GET (as by clicking a link or via redirect)
