@@ -385,7 +385,9 @@ def dashboard():
 
     # Query for all messages for current user
     message_history = db.execute("SELECT * FROM messages WHERE session_id IN ?",
-                    db.execute("SELECT id FROM sessions WHERE user_id = ?", session["user_id"])[0]["id"])
+                    db.execute("SELECT id FROM sessions WHERE user_id = ?", session["user_id"]))
+
+    print(message_history)
 
     # To filter the messages from all
     clean_history = []
