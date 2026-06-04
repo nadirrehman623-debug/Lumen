@@ -393,17 +393,18 @@ def dashboard():
 
     # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
 
-    system_prompt = (
-        f"You need to return all unique topics discussed across all sessions by each subject."
-                    f"you are required to return a JSON file as your response. No preamble, no markdown backticks, just raw JSON."
-                    f"make sure to categorize each topic by the subject that was being discussed in that session."
-                    f"Topics must be explained relative to the depth they were discussed in the conversation."
-                    f"You'll be given message history of all chat sessions they user ever had in the user prompt."
+    system_prompt = (f"You need to return all unique topics discussed across all sessions by each subject."
+                f"you are required to return a JSON file as your response. No preamble, no markdown backticks, just raw JSON."
+                f"make sure to categorize each topic by the subject that was being discussed in that session."
+                f"Topics must be explained relative to the depth they were discussed in the conversation."
+                f"You'll be given message history of all chat sessions they user ever had in the user prompt.")
 
     Topics = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[{"role": "system", "content":system_prompt}] + clean_history
             )
+
+    topics = json.loads(Topics.choices[0].message.content)
 
     # Store all topics in a list of dicts And INSERT all topics by their subject inside topics table
 
