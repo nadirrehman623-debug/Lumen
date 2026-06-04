@@ -381,6 +381,14 @@ def dashboard():
 
     # Display ALL the Unique topics discussed in sessions per subject
 
+    # Query for all messages for current user
+    message_history = db.execute("SELECT * FROM messages WHERE session_id = ?", db.execute("SELECT id FROM sessions WHERE user_id = ?", session["user_id"])[0]["id"])
+
+    # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
+
+    # Store all topics in a list of dicts And INSERT all topics by their subject inside topics table
+
+
     # Display ALL subject user is enrolled in
     all_subjects = db.execute("SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
 
