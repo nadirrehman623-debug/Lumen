@@ -2,6 +2,7 @@ import os
 
 from cs50 import SQL
 from openai import OpenAI
+import json
 from flask import Flask, flash, redirect, render_template, request, session, abort, jsonify
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
