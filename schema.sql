@@ -52,7 +52,7 @@ SELECT COUNT(*) FROM sessions
 JOIN subjects
 ON subject_id = id
         WHERE subject_id IN (
-            SELECT * DISTINCT id FROM subjects WHERE user_id = (
+            SELECT DISTINCT id FROM subjects WHERE user_id = (
                 SELECT id FROM users WHERE username = "test1"
             )
         )
