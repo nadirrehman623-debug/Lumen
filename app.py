@@ -385,7 +385,7 @@ def dashboard():
     all_subjects = db.execute("SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
 
     # Display no of sessions per subject
-    each_session = db.execute("SELECT COUNT(*) FROM sessions WHERE user_id = ? AND subject_id = ")
+    each_session = db.execute("SELECT subject, COUNT(*) AS total_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.subject_id IN  ? " db.execute("SELECT DISTINCT id FROM subjects WHERE user_id = ? GROUP BY sessions.subject_id"))
 
     # Connection between topics across different subjects
 

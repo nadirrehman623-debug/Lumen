@@ -48,15 +48,8 @@ CREATE TABLE topics (
     FOREIGN KEY (session_id) REFERENCES sessions(id)
 );
 
-SELECT COUNT(*) FROM sessions
-JOIN subjects
-ON sessions.subject_id = subjects.id
-        WHERE sessions.subject_id IN (
-            SELECT DISTINCT id FROM subjects WHERE user_id = 1
-        )
-GROUP BY subjects.subject;
 
-SELECT subject_id, COUNT(*) AS total_count
+SELECT subject, COUNT(*) AS total_count
 FROM sessions JOIN subjects
 ON sessions.subject_id = subjects.id
     WHERE sessions.subject_id IN (
