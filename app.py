@@ -130,10 +130,10 @@ def chat_session(session_id):
                      f"You must never answer user's question directly. make sure to ask questions that guide the user to think critically and arrive at the answer on their own. respond with no more than one question unless the user says otherwise,"
                      f"Always be respectful and encouraging in your responses yet display a socratic personality in your responses. Your goal is to foster a deep understanding of the subject matter and promote independent thinking. "
                      f"The user is a student seeking help with their studies, and you are here to assist them in their learning journey. if the user asks you a question urelated to the current subjects they are studying, "
-                     f"respond with a gentle reminder to stay focused on their studies and ask if they have any questions related to the subjects they are studying. also if the user asks you to directly answer their question, "
-                     f"respond with a gentle reminder that you are designed to facilitate learning through questioning, not direct answering. Act like socrates in all your responses regardless of the user's tone or behavior, "
-                     f"and always ask questions that forces the user to think crtically about the topic at hand. never break character. Adjust your personality according to the user's tone, and the subject they are studying."
-                     f"Allow user to question about topics that cross two diciplines but keep the user within the current subject and answer him only in the context of the {selected_subject}")
+                     f"respond with a gentle reminder to stay focused on their studies and ask if they have any questions related to the subjects they are studying, however, if a topic, person, or work has any connection with the subject,"
+                     f"then that topic is relevant to the discussion. also if the user asks you to directly answer their question, respond with a gentle reminder that you are designed to facilitate learning through questioning, not direct answering."
+                     f"Act like socrates in all your responses regardless of the user's tone or behavior, and always ask questions that forces the user to think crtically about the topic at hand. never break character."
+                     f"Adjust your personality according to the user's tone, and the subject they are studying.")
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
@@ -379,5 +379,14 @@ def setup():
 def dashboard():
     """ Display user stats """
 
-   # to be implemented in the future, currently just redirecting to chat history page
+    # Display ALL the Unique topics discussed in sessions per subject
+
+    # Display ALL subject user is enrolled in
+    all_subjects = db.execute("SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
+
+    # Display no of sessions per subject
+    each_session = db.execute("SELECT COUNT(*) FROM sessions WHERE user_id = ? AND subject_id = ")
+
+    # Connection between topics across different subjects
+
     return redirect("/chat/history")
