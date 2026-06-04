@@ -386,8 +386,10 @@ def dashboard():
     message_history = db.execute("SELECT * FROM messages WHERE session_id IN ?",
                     db.execute("SELECT id FROM sessions WHERE user_id = ?", session["user_id"])[0]["id"])
 
+    # To filter the messages from all
+    clean_history = []
     for message in message_history:
-        clean_history = {"role": msg["role"], "content": msg["content"]}
+        clean_history.append({"role": message["role"], "content": message["content"]})
 
     # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
     Topics = client.chat.completions.create(
