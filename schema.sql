@@ -50,10 +50,8 @@ CREATE TABLE topics (
 
 SELECT COUNT(*) FROM sessions
 JOIN subjects
-ON subject_id = id
-        WHERE subject_id IN (
-            SELECT DISTINCT id FROM subjects WHERE user_id = (
-                SELECT id FROM users WHERE username = "test1"
-            )
+ON sessions.subject_id = subjects.id
+        WHERE sessions.subject_id IN (
+            SELECT DISTINCT id FROM subjects WHERE user_id = 1
         )
-GROUP BY subject_id;
+GROUP BY subjects.subject;
