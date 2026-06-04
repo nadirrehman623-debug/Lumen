@@ -5,7 +5,9 @@
 {% endblock %}
 
 {% block main %}
-    <h1 class="text-center">Chat Interface</h1>
+    {% if not chat_history %}
+    <h1 class="text-center">Welcome to Lumen</h1>
+    {% endif %}
     <div id="chat-history" class="mt-4">
          {% for message in chat_history %}
         <div class="message {{ message.role }}">

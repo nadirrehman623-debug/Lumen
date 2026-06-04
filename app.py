@@ -422,4 +422,4 @@ def dashboard():
 
     # Connection between topics across different subjects
 
-    return redirect("/chat/history")
+    return render_template("dashboard.html", message_history=message_history)
