@@ -399,6 +399,7 @@ def dashboard():
             )
 
     # Store all topics in a list of dicts And INSERT all topics by their subject inside topics table
+    
 
 
     # Display ALL subject user is enrolled in
