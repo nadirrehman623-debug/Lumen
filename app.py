@@ -234,6 +234,7 @@ def chat_session(session_id):
                     {"role": "user", "content": f"Greet {username} and ask how you can assist them with their studies today."}
                 ]
             )
+
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
             chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
             return render_template("chat_interface.html", session_id=session_id, chat_history=chat_history)
@@ -382,9 +383,20 @@ def dashboard():
     # Display ALL the Unique topics discussed in sessions per subject
 
     # Query for all messages for current user
-    message_history = db.execute("SELECT * FROM messages WHERE session_id = ?", db.execute("SELECT id FROM sessions WHERE user_id = ?", session["user_id"])[0]["id"])
+    message_history = db.execute("SELECT * FROM messages WHERE session_id IN ?",
+                    db.execute("SELECT id FROM sessions WHERE user_id = ?", session["user_id"])[0]["id"])
 
     # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
+    Topics = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[
+                    {"role": "system", "content":f"You need to return all unique topics discussed across all sessions by each subject."
+                                                 f"make sure to categorize each topic by the subject that was being discussed in that session."
+                                                 f"Topics must be explained relative to the depth they were discussed in the conversation."
+                                                 f"You'll be given message history of all chat sessions they user ever had in the user prompt."},
+                    {"role": "user", "content": message_history}
+                ]
+            )
 
     # Store all topics in a list of dicts And INSERT all topics by their subject inside topics table
 
@@ -394,7 +406,7 @@ def dashboard():
 
     # Display no of sessions per subject
     each_session = db.execute("SELECT subject, COUNT(*) AS total_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.subject_id IN  ? ",
-                              db.execute("SELECT DISTINCT id FROM subjects WHERE user_id = ? GROUP BY sessions.subject_id", session["user_id"])[0]["id"])
+                db.execute("SELECT DISTINCT id FROM subjects WHERE user_id = ? GROUP BY sessions.subject_id", session["user_id"])[0]["id"])
 
     # Connection between topics across different subjects
 
