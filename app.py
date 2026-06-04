@@ -386,6 +386,9 @@ def dashboard():
     message_history = db.execute("SELECT * FROM messages WHERE session_id IN ?",
                     db.execute("SELECT id FROM sessions WHERE user_id = ?", session["user_id"])[0]["id"])
 
+    for message in message_history:
+        clean_history = 
+
     # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
     Topics = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
