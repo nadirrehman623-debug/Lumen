@@ -5,53 +5,65 @@
 {% endblock %}
 
 {% block main %}
-    {% if not chat_history %}
-    <h1 class="text-center">Welcome to Lumen</h1>
-    {% endif %}
-    <div id="chat-history" class="mt-4">
-         {% for message in chat_history %}
-        <div class="message {{ message.role }}">
-            {{ "You" if message.role == "user" else "Lumen" }}: {{ message.content }}
+
+{% if not chat_history %}
+<div class="text-center my-5">
+    <h4 class="text-muted">Ask Lumen!</h4>
+</div>
+{% endif %}
+
+<div id="chat-history" class="d-flex flex-column gap-3 mb-4" style="min-height: 60vh; max-height: 65vh; overflow-y: auto; padding: 1rem;">
+    {% for message in chat_history %}
+        <div class="d-flex {% if message.role == 'user' %}justify-content-end{% else %}justify-content-start{% endif %}">
+            <div class="px-3 py-2 rounded-3 {% if message.role == 'user' %}bg-primary text-white{% else %}bg-light text-dark{% endif %}" style="max-width: 70%; font-size: 14px; line-height: 1.6;">
+                <small class="d-block fw-semibold mb-1">{{ "You" if message.role == "user" else "Lumen" }}</small>
+                {{ message.content }}
+            </div>
         </div>
-        {% endfor %}
-    </div>
-    <form method="post" action="/chat/{{ session_id }}" id="chat-form">
-        <div class="mb-3">
-            <label for="user-input" class="form-label">Your Message:</label>
-            <input type="text" autocomplete="off" class="form-control" id="user-input" name="user_input" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Send</button>
-    </form>
-    <script>
-        const chatForm = document.getElementById('chat-form');
-        const chatHistory = document.getElementById('chat-history');
-        const sessionId = "{{ session_id }}";
+    {% endfor %}
+</div>
 
-        chatForm.addEventListener('submit', function(e) {
-            e.preventDefault();  // stop the form from reloading the page
+<form method="post" action="/chat/{{ session_id }}" id="chat-form" class="d-flex gap-2">
+    <input type="text" autocomplete="off" class="form-control" id="user-input" name="user_input" placeholder="Type your message..." required>
+    <button type="submit" class="btn btn-primary px-4">Send</button>
+</form>
 
-            const userInput = document.getElementById('user-input').value;
+<script>
+    const chatForm = document.getElementById('chat-form');
+    const chatHistory = document.getElementById('chat-history');
+    const sessionId = "{{ session_id }}";
 
-            fetch(`/chat/${sessionId}`, {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({user_input: userInput})
-            })
-            .then(response => response.json())
-            .then(data => {
-                // append user message
-                const userDiv = document.createElement('div');
-                userDiv.innerText = `You: ${userInput}`;
-                chatHistory.appendChild(userDiv);
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
 
-                // append AI response
-                const aiDiv = document.createElement('div');
-                aiDiv.innerText = `Lumen: ${data.ai_response}`;
-                chatHistory.appendChild(aiDiv);
+        const userInput = document.getElementById('user-input').value;
 
-                // clear input field
-                document.getElementById('user-input').value = '';
-            })
+        fetch(`/chat/${sessionId}`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({user_input: userInput})
+        })
+        .then(response => response.json())
+        .then(data => {
+            // append user message
+            const userWrap = document.createElement('div');
+            userWrap.className = 'd-flex justify-content-end';
+            userWrap.innerHTML = `<div class="px-3 py-2 rounded-3 bg-primary text-white" style="max-width:70%;font-size:14px;line-height:1.6"><small class="d-block fw-semibold mb-1">You</small>${userInput}</div>`;
+            chatHistory.appendChild(userWrap);
+
+            // append AI response
+            const aiWrap = document.createElement('div');
+            aiWrap.className = 'd-flex justify-content-start';
+            aiWrap.innerHTML = `<div class="px-3 py-2 rounded-3 bg-light text-dark" style="max-width:70%;font-size:14px;line-height:1.6"><small class="d-block fw-semibold mb-1">Lumen</small>${data.ai_response}</div>`;
+            chatHistory.appendChild(aiWrap);
+
+            // scroll to bottom
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+
+            // clear input
+            document.getElementById('user-input').value = '';
         });
-    </script>
+    });
+</script>
+
 {% endblock %}
