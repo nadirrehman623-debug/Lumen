@@ -430,13 +430,12 @@ def setup():
 def dashboard():
     """ Display user stats """
 
-    # Display ALL subject user is enrolled in
+    # Get all subjects user is enrolled in
     dashboard_data = db.execute("SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
-    app.logger.info(dashboard_data)
 
-    # Display no of sessions per subject
-    dashboard_data.append(db.execute(
-            "SELECT sessions.id AND subjects.subject FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ?") session["user_id"])
+    # Get all sessions per subject the user have
+    dashboard_data.append(db.execute("SELECT sessions.id, subjects.subject FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ?", session["user_id"]))
+    app.logger.info(dashboard_data)
 
     # Connection between topics across different subjects
 
