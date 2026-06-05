@@ -10,12 +10,14 @@
         <thead>
             <tr>
                 <th>Subject-Enrolled</th>
+                <th>-</th>
             </tr>
         </thead>
         <tbody>
             {% for subject in subjects %}
                 <tr>
                      <td>{{ subject.subject }}</td>
+                     <td><a href="/chat/{{ session.id }}"></a></td>
                 </tr>
             {% endfor %}
         </tbody>
