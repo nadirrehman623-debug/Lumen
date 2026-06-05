@@ -30,7 +30,7 @@
                     <td>{{ session.subject }}</td>
                     <td><a href="/chat/{{ session.id }}">{{ session.session_summary }}</a></td>
                     <td>{{ session.created_at }}</td>
-                    <td><button>Delete session</button></td>
+                    <td><form><input type="submit" value="delete-Session">Delete session</button></form></td>
                 </tr>
             {% endfor %}
         </tbody>
