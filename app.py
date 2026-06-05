@@ -242,6 +242,8 @@ def chat_session(session_id):
                                 f"do not generate similar topics for the same subject, only generate multiple topics if the messages have completely shifted the topic."
                                 f"don't generate multiple topics for slight changes in the conversation, limit such topics to one topic that covers entire scope of that discussion."
                                 f"Topics must be explained relative to the depth they were discussed in the conversation."
+                                f"the Topics you return must be widely recognizable by name such as 'thermodynamics' in science,"
+                                f"you are not required to return every detail within such a topic, just the term that can encapsulate the entirety of that conversational excahnge in it."
                                 f"Each topic must include a brief 1-2 sentence explanation of the depth and context in which it was discussed."
                                 f"your response must be acurrate and not mix topics from one subject to another, or overestimate the depth of the discussion"
                                 f"You'll be given message history of all chat sessions they user ever had in the user prompt."
