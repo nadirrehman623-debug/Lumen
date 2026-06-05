@@ -436,7 +436,7 @@ def dashboard():
 
     # Display no of sessions per subject
     dashboard_data.append(db.execute(
-            "SELECT sessions.id AND subjects.subject FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE subjects.user_id = ?") session["user_id"])
+            "SELECT sessions.id AND subjects.subject FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ?") session["user_id"])
 
     # Connection between topics across different subjects
 
