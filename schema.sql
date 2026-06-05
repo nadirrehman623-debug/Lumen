@@ -40,20 +40,10 @@ CREATE TABLE messages (
 CREATE TABLE topics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
-    subject_id INTEGER NOT NULL,
-    session_id INTEGER NOT NULL,
     topic TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (subject_id) REFERENCES subjects(id),
-    FOREIGN KEY (session_id) REFERENCES sessions(id)
+    depth TEXT,
+    subject TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-
-SELECT subject, COUNT(*) AS total_count
-FROM sessions JOIN subjects
-ON sessions.subject_id = subjects.id
-    WHERE sessions.subject_id IN (
-        SELECT DISTINCT id FROM subjects WHERE user_id = 1
-    )
-GROUP BY sessions.subject_id;
 

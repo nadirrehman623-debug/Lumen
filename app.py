@@ -148,7 +148,7 @@ def chat_session(session_id):
         # if the summary is NULL then generate summary
         if summary_status[0]["session_summary"] == None:
             summary = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="openai/gpt-oss-120b",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": f"Summarize the following conversation in 5 words based on {user_input}"
@@ -168,7 +168,7 @@ def chat_session(session_id):
             if summary_result == "irrelevant input":
                 # Generate a reminder for the user to stay focused on the subject matter
                 response = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
+                    model="openai/gpt-oss-120b",
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": f"Respond with a gentle reminder to stay focused on their studies"
@@ -187,7 +187,7 @@ def chat_session(session_id):
 
                 # continue with the conversation as normal and get the AI response based on the user input and system prompt
                 response = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
+                    model="openai/gpt-oss-120b",
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_input},
@@ -213,12 +213,57 @@ def chat_session(session_id):
             messages.append({"role": "user", "content": user_input})
 
             response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="openai/gpt-oss-120b",
                 messages=messages
             )
 
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
+
+
+            # to get the current count of messages
+            message_count = db.execute("SELECT COUNT(*) as count FROM messages WHERE session_id = ?", session_id)[0]["count"]
+
+            if message_count % 5 == 0:
+                # Get last 10 messages from history
+                recent_messages = db.execute("SELECT role, content FROM messages WHERE session_id = ? ORDER BY created_at DESC LIMIT 10", session_id)
+
+                # Reverse so chronological order
+                recent_messages = recent_messages[::-1]
+                app.logger.info(f"Recent messages: {recent_messages}")
+
+                clean_history = [{"role": msg["role"], "content": msg["content"]} for msg in recent_messages]
+
+                # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
+
+                system_prompt = (f"You need to return all unique topics discussed in the message exchanges."
+                                f"you are required to return a JSON file as your response. No preamble, no markdown backticks, just raw JSON."
+                                f"make sure to categorize each topic by the subject that was being discussed in that session."
+                                f"Topics must be explained relative to the depth they were discussed in the conversation."
+                                f"Each topic must include a brief 1-2 sentence explanation of the depth and context in which it was discussed."
+                                f"your response must be acurrate and not mix topics from one subject to another, or overestimate the depth of the discussion"
+                                f"You'll be given message history of all chat sessions they user ever had in the user prompt."
+                                f"Avoid returning multiple topics when there's not much significant change in the message history given to you.")
+
+                Topics = client.chat.completions.create(
+                            model="openai/gpt-oss-120b",
+                            response_format={"type": "json_object"},
+                            messages=[{"role": "system", "content":system_prompt}] + clean_history +
+                            [{"role": "user", "content":
+                                    f"Now return the JSON where each key is a subject name and the value is a list of topics discussed ub that subject's sessions,"
+                                    f"with breif explanation of the depth covered.Sessions and their subjects:"
+                                    f"{db.execute('SELECT sessions.id, subjects.subject FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? ', session["user_id"])}"}]
+                        )
+
+                # Returns a JSON which is a dict where each key stores a list that stores a dict with keys topic and depth
+                topics = json.loads(Topics.choices[0].message.content)
+
+                # Loop topics to insert data into topics table
+                for subject, topic in topics.items():
+                    # Loop over each value in the list topic and insert its values into topics table
+                    for value in range(len(topic)):
+                        db.execute("INSERT INTO topics (subject, topic, depth, user_id) VALUES(?, ?, ?, ?)",
+                                subject, topic[value]["topic"],topic[value]["explanation"], session["user_id"])
 
             return jsonify({"ai_response": response.choices[0].message.content}), 200
 
@@ -229,7 +274,7 @@ def chat_session(session_id):
         if not db.execute("SELECT * FROM messages WHERE session_id = ?", session_id):
             username = db.execute("SELECT username FROM users WHERE id = ?", session["user_id"])[0]["username"]
             response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="openai/gpt-oss-120b",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": f"Greet {username} and ask how you can assist them with their studies today."}
@@ -383,33 +428,11 @@ def dashboard():
 
     # Display ALL the Unique topics discussed in sessions per subject
 
-    # Query for all messages for current user
-    message_history = db.execute("SELECT * FROM messages WHERE session_id IN ?",
-                    db.execute("SELECT id FROM sessions WHERE user_id = ?", session["user_id"]))
-
-    print(message_history)
-
-    # To filter the messages from all
-    clean_history = []
-    for message in message_history:
-        clean_history.append({"role": message["role"], "content": message["content"]})
-
-    # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
-
-    system_prompt = (f"You need to return all unique topics discussed across all sessions by each subject."
-                f"you are required to return a JSON file as your response. No preamble, no markdown backticks, just raw JSON."
-                f"make sure to categorize each topic by the subject that was being discussed in that session."
-                f"Topics must be explained relative to the depth they were discussed in the conversation."
-                f"You'll be given message history of all chat sessions they user ever had in the user prompt.")
-
-    Topics = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "system", "content":system_prompt}] + clean_history
-            )
-
-    topics = json.loads(Topics.choices[0].message.content)
-
-    # Store all topics in a list of dicts And INSERT all topics by their subject inside topics table
+    All_topics = db.execute("SELECT * FROM topics WHERE user_id = ?", session["user_id"])
+    # Store topics and subjects from All_topics
+    content = []
+    for row in All_topics:
+        content.append({"role": "user", "content": row["topic"] , "content": row["subject"]})
 
 
 
@@ -417,8 +440,8 @@ def dashboard():
     all_subjects = db.execute("SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
 
     # Display no of sessions per subject
-    each_session = db.execute("SELECT subject, COUNT(*) AS total_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.subject_id IN  ? ",
-                db.execute("SELECT DISTINCT id FROM subjects WHERE user_id = ? GROUP BY sessions.subject_id", session["user_id"])[0]["id"])
+   # each_session = db.execute("SELECT subject, COUNT(*) AS total_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.subject_id IN  ? ",
+    #            db.execute("SELECT DISTINCT id FROM subjects WHERE user_id = ? GROUP BY sessions.subject_id", session["user_id"])[0]["id"])
 
     # Connection between topics across different subjects
 
