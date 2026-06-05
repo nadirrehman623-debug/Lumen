@@ -435,6 +435,7 @@ def dashboard():
     app.logger.info(dashboard_data)
 
     # Display no of sessions per subject
+    
    # each_session = db.execute("SELECT subject, COUNT(*) AS total_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.subject_id IN  ? ",
     #            db.execute("SELECT DISTINCT id FROM subjects WHERE user_id = ? GROUP BY sessions.subject_id", session["user_id"])[0]["id"])
 
