@@ -102,6 +102,8 @@ def chat_history():
 
             return redirect(f"/chat/{session_id}")
 
+        # if User clicked delete session button 
+
     # if the user reached route via GET (as by clicking a link or via redirect)
     else:
         # query for all sessions to display
