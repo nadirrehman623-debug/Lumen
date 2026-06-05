@@ -431,12 +431,12 @@ def dashboard():
     """ Display user stats """
 
     # Get all subjects user is enrolled in
-    dashboard_data = db.execute("SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
+    subjects_enrolled = db.execute("SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
 
     # Get all sessions per subject the user have
-    dashboard_data.append(db.execute("SELECT subjects.subject, COUNT(sessions.id) as session_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? GROUP BY subjects.subject", session["user_id"]))
+    sessions_bysubjects = (db.execute("SELECT subjects.subject, COUNT(sessions.id) as session_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? GROUP BY subjects.subject", session["user_id"]))
     app.logger.info(dashboard_data)
 
     # Connection between topics across different subjects
 
-    return render_template("dashboard.html")
+    return render_template("dashboard.html", subjects_enrolled=subjects, sessions_bysubjects=sessions)

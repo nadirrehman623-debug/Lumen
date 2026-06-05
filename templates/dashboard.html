@@ -6,8 +6,9 @@
 
 
 {% block main %}
-      {% for message in chat_history %}
-        <div class="message {{ message.role }}">
+      {% for subject in subjects %}
+        <div class="subjectsEnrolled">
+            <
             {{ "You" if message.role == "user" else "Lumen" }}: {{ message.content }}
         </div>
         {% endfor %}
