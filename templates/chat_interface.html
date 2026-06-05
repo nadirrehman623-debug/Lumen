@@ -5,10 +5,7 @@
 {% endblock %}
 
 {% block main %}
-    {% if not chat_history %}
-    <h1 class="text-center">Welcome to Lumen</h1>
-    {% endif %}
-    <div id="chat-history" class="mt-4">
+    <div id="chat-history" class="d-flex flex-column gap-3 mb-4" style="min-height: 60vh; max-height: 65vh; overflow-y: auto; padding: 1rem;">
          {% for message in chat_history %}
         <div class="message {{ message.role }}">
             {{ "You" if message.role == "user" else "Lumen" }}: {{ message.content }}
