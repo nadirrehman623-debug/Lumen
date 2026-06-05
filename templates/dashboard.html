@@ -6,9 +6,11 @@
 
 
 {% block main %}
-    <div class="card" style="width: 18rem;">
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item"><b>Subjects-Enrolled</b></li>
+   <div class="card" style="width: 18rem;">
+    <div class="card-header">
+        <b>All Subjects</b>
+    </div>
+    <ul class="list-group list-group-flush">
             {% for subject in subjects %}
             <li class="list-group-item">{{ subject.subject }}</li>
             {% endfor %}
