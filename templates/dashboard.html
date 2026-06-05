@@ -9,13 +9,29 @@
     <table class="table table-striped mt-4">
         <thead>
             <tr>
-                <th>Subject</th>
+                <th>Subject-Enrolled</th>
             </tr>
         </thead>
         <tbody>
             {% for subject in subjects %}
                 <tr>
                      <td>{{ subject.subject }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Sessions(per subjects)</th>
+                <th>Subject</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in sessions %}
+                <tr>
+                     <td>{{ session.session_count }}</td>
+                     <td>{{ session.subject }}</td>
                 </tr>
             {% endfor %}
         </tbody>
