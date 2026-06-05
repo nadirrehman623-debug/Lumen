@@ -433,8 +433,6 @@ def dashboard():
     # Display ALL the topics discussed in sessions per subject
 
 
-
-
     # Display ALL subject user is enrolled in
     all_subjects = db.execute("SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
 
