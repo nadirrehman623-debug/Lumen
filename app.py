@@ -239,6 +239,8 @@ def chat_session(session_id):
                 system_prompt = (f"You need to return all unique topics discussed in the message exchanges."
                                 f"you are required to return a JSON file as your response. No preamble, no markdown backticks, just raw JSON."
                                 f"make sure to categorize each topic by the subject that was being discussed in that session."
+                                f"do not generate similar topics for the same subject, only generate multiple topics if the messages have completely shifted the topic."
+                                f"don't generate multiple topics for slight changes in the conversation, limit such topics to one topic that covers entire scope of that discussion."
                                 f"Topics must be explained relative to the depth they were discussed in the conversation."
                                 f"Each topic must include a brief 1-2 sentence explanation of the depth and context in which it was discussed."
                                 f"your response must be acurrate and not mix topics from one subject to another, or overestimate the depth of the discussion"
