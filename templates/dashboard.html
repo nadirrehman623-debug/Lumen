@@ -6,20 +6,14 @@
 
 
 {% block main %}
-    <table class="table table-striped mt-4">
-        <thead>
-            <tr>
-                <th>Subject-Enrolled</th>
-            </tr>
-        </thead>
-        <tbody>
+    <div class="card" style="width: 18rem;">
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item"><b>Subjects-Enrolled</b></li>
             {% for subject in subjects %}
-                <tr>
-                     <td>{{ subject.subject }}</td>
-                </tr>
+            <li class="list-group-item">{{ subject.subject }}</li>
             {% endfor %}
-        </tbody>
-    </table>
+        </ul>
+    </div>
     <table class="table table-striped mt-4">
         <thead>
             <tr>
