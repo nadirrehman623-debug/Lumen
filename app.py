@@ -221,7 +221,7 @@ def chat_session(session_id):
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
 
 
-            # to get the current count of messages
+            # to get the current count of messages for current session
             message_count = db.execute("SELECT COUNT(*) as count FROM messages WHERE session_id = ?", session_id)[0]["count"]
 
             if message_count % 5 == 0:
