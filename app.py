@@ -432,6 +432,7 @@ def dashboard():
 
     # Display ALL subject user is enrolled in
     all_subjects = db.execute("SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
+    
 
     # Display no of sessions per subject
    # each_session = db.execute("SELECT subject, COUNT(*) AS total_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.subject_id IN  ? ",
