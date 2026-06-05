@@ -6,10 +6,18 @@
 
 
 {% block main %}
-      {% for subject in subjects %}
-        <div class="subjectsEnrolled">
-            <
-            {{ "You" if message.role == "user" else "Lumen" }}: {{ message.content }}
-        </div>
-        {% endfor %}
+    <table class="table table-striped mt-4">
+        <thead>
+            <tr>
+                <th>Subject</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subject in subjects %}
+                <tr>
+                    <td>{{ subjects.[subject]["subject"] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}

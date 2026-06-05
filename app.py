@@ -435,8 +435,7 @@ def dashboard():
 
     # Get all sessions per subject the user have
     sessions_bysubjects = (db.execute("SELECT subjects.subject, COUNT(sessions.id) as session_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? GROUP BY subjects.subject", session["user_id"]))
-    app.logger.info(dashboard_data)
 
     # Connection between topics across different subjects
 
-    return render_template("dashboard.html", subjects_enrolled=subjects, sessions_bysubjects=sessions)
+    return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
