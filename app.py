@@ -46,12 +46,14 @@ def index():
     """ Index/ homepage """
 
     if session.get("user_id") is None:
-        # User reached route via GET (as by clicking a link or via redirect)
+        # if user is not logged it
         return render_template("index.html")
     else:
         rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
+        # if user already have subjects selected
         if rows:
             return redirect("/chat/history")
+        # if user just logged in
         else:
             return redirect("/setup")
 
