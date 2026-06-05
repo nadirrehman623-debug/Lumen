@@ -266,8 +266,8 @@ def chat_session(session_id):
                 for subject, topic in topics.items():
                     # Loop over each value in the list topic and insert its values into topics table
                     for value in range(len(topic)):
-                        db.execute("INSERT INTO topics (subject, topic, depth, user_id) VALUES(?, ?, ?, ?)",
-                                subject, topic[value]["topic"],topic[value]["explanation"], session["user_id"])
+                        db.execute("INSERT INTO topics (subject, topic, depth, user_id, session_id) VALUES(?, ?, ?, ?, ?)",
+                                subject, topic[value]["topic"],topic[value]["explanation"], session["user_id"], session_id)
 
             return jsonify({"ai_response": response.choices[0].message.content}), 200
 

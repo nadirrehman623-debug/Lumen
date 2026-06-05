@@ -40,10 +40,12 @@ CREATE TABLE messages (
 CREATE TABLE topics (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
+    session_id INTEGER NOT NULL,
     topic TEXT,
     depth TEXT,
     subject TEXT,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (session_id) REFERENCES sessions(id)
 );
 
 
