@@ -1,5 +1,3 @@
-import requests
-
 from flask import redirect, session
 from functools import wraps
 
@@ -18,3 +16,5 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+def connect()
