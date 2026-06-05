@@ -77,10 +77,10 @@ def chat_history():
         if db.execute("SELECT * FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject):
             # Add NEW chat session to sessions table
             db.execute("INSERT INTO sessions (user_id, subject_id) VALUES(?, ?)", session["user_id"],
-            db.execute("SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"],
+                       db.execute("SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"],
                        selected_subject)[0]["id"])
 
-            flash("New chat session started","success")
+            flash("New chat session started", "success")
 
             # Get the ID of the row we JUST inserted
             session_id = db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
@@ -109,10 +109,10 @@ def chat_history():
 
         # get the subject for each chat session from subjects table and add it to the chat_sessions list
         for chat_session in chat_sessions:
-            chat_session["subject"] = db.execute("SELECT subject FROM subjects WHERE id = ?", chat_session["subject_id"])[0]["subject"]
+            chat_session["subject"] = db.execute(
+                "SELECT subject FROM subjects WHERE id = ?", chat_session["subject_id"])[0]["subject"]
 
         return render_template("chat_history.html", subjects=subjects, chat_sessions=chat_sessions)
-
 
 
 @app.route("/chat/<session_id>", methods=["GET", "POST"])
@@ -126,7 +126,7 @@ def chat_session(session_id):
 
     # get the selected subject for the current chat session from sessions table with the session_id
     selected_subject = db.execute("SELECT subject FROM subjects WHERE id = ?",
-                       db.execute("SELECT subject_id FROM sessions WHERE id = ?", session_id)[0]["subject_id"])
+                                  db.execute("SELECT subject_id FROM sessions WHERE id = ?", session_id)[0]["subject_id"])
 
     # create a system prompt for the AI agent to follow based on the selected subject for the current chat session
     system_prompt = (f"You are Lumen, a socratic AI assistant designed to help students learn by asking thought-provoking questions. You have access to the user's selected subject for this session, which is {selected_subject}. "
@@ -154,15 +154,16 @@ def chat_session(session_id):
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": f"Summarize the following conversation in 5 words based on {user_input}"
-                                                f"if the input is irrelevant to {selected_subject},"
-                                                f"If the topic in user input is such that crosses the lines of two subjects don't return irrelevant"
-                                                f"only respond exactly with the words:'irrelevant input',"
-                                                f"when the user input is not in the scope of the subject"
-                                                f"not when the user's answer is wrong : {user_input}"}
+                     f"if the input is irrelevant to {selected_subject},"
+                     f"If the topic in user input is such that crosses the lines of two subjects don't return irrelevant"
+                     f"only respond exactly with the words:'irrelevant input',"
+                     f"when the user input is not in the scope of the subject"
+                     f"not when the user's answer is wrong : {user_input}"}
                 ]
             )
 
-            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
+            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
+                       session_id, "user", user_input)
 
             summary_result = summary.choices[0].message.content.lower().strip(".")
 
@@ -174,18 +175,20 @@ def chat_session(session_id):
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": f"Respond with a gentle reminder to stay focused on their studies"
-                                                    f"and ask if they have any questions related to the {selected_subject}"
-                                                    f"since the user input is irrelevant to their studies: {user_input}"}
+                         f"and ask if they have any questions related to the {selected_subject}"
+                         f"since the user input is irrelevant to their studies: {user_input}"}
                     ]
                 )
 
-                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
+                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
+                           session_id, "assistant", response.choices[0].message.content)
 
                 return jsonify({"ai_response": response.choices[0].message.content}), 200
 
             # otherwise, insert the summary into the sessions table and continue with the conversation as normal
             else:
-                db.execute("UPDATE sessions SET session_summary = ? WHERE id = ?", summary.choices[0].message.content, session_id)
+                db.execute("UPDATE sessions SET session_summary = ? WHERE id = ?",
+                           summary.choices[0].message.content, session_id)
 
                 # continue with the conversation as normal and get the AI response based on the user input and system prompt
                 response = client.chat.completions.create(
@@ -196,7 +199,8 @@ def chat_session(session_id):
                     ]
                 )
 
-                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
+                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
+                           session_id, "assistant", response.choices[0].message.content)
                 return jsonify({"ai_response": response.choices[0].message.content}), 200
 
         # otherwise, when session_summary != NULL, insert the user input and AI response into messages and continue with the conversation as normal
@@ -219,47 +223,51 @@ def chat_session(session_id):
                 messages=messages
             )
 
-            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "user", user_input)
-            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
-
+            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
+                       session_id, "user", user_input)
+            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
+                       session_id, "assistant", response.choices[0].message.content)
 
             # to get the current count of messages for current session
-            message_count = db.execute("SELECT COUNT(*) as count FROM messages WHERE session_id = ?", session_id)[0]["count"]
+            message_count = db.execute(
+                "SELECT COUNT(*) as count FROM messages WHERE session_id = ?", session_id)[0]["count"]
 
             if message_count % 5 == 0:
                 # Get last 10 messages from history
-                recent_messages = db.execute("SELECT role, content FROM messages WHERE session_id = ? ORDER BY created_at DESC LIMIT 10", session_id)
+                recent_messages = db.execute(
+                    "SELECT role, content FROM messages WHERE session_id = ? ORDER BY created_at DESC LIMIT 10", session_id)
 
                 # Reverse so chronological order
                 recent_messages = recent_messages[::-1]
                 app.logger.info(f"Recent messages: {recent_messages}")
 
-                clean_history = [{"role": msg["role"], "content": msg["content"]} for msg in recent_messages]
+                clean_history = [{"role": msg["role"], "content": msg["content"]}
+                                 for msg in recent_messages]
 
                 # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
 
                 system_prompt = (f"You need to return all unique topics discussed in the message exchanges."
-                                f"you are required to return a JSON file as your response. No preamble, no markdown backticks, just raw JSON."
-                                f"make sure to categorize each topic by the subject that was being discussed in that session."
-                                f"do not generate similar topics for the same subject, only generate multiple topics if the messages have completely shifted the topic."
-                                f"don't generate multiple topics for slight changes in the conversation, limit such topics to one topic that covers entire scope of that discussion."
-                                f"Topics must be explained relative to the depth they were discussed in the conversation."
-                                f"the Topics you return must be widely recognizable by name, such as 'thermodynamics' in science,"
-                                f"you are not required to return every detail within such a topic, just the term that can encapsulate the entirety of that conversational excahnge in it."
-                                f"Each topic must include a brief 1-2 sentence explanation of the depth and context in which it was discussed."
-                                f"your response must be acurrate and not mix topics from one subject to another, or overestimate the depth of the discussion"
-                                f"You'll be given message history of all chat sessions they user ever had in the user prompt."
-                                f"Avoid returning multiple topics when there's not much significant change in the message history given to you.")
+                                 f"you are required to return a JSON file as your response. No preamble, no markdown backticks, just raw JSON."
+                                 f"make sure to categorize each topic by the subject that was being discussed in that session."
+                                 f"do not generate similar topics for the same subject, only generate multiple topics if the messages have completely shifted the topic."
+                                 f"don't generate multiple topics for slight changes in the conversation, limit such topics to one topic that covers entire scope of that discussion."
+                                 f"Topics must be explained relative to the depth they were discussed in the conversation."
+                                 f"the Topics you return must be widely recognizable by name, such as 'thermodynamics' in science,"
+                                 f"you are not required to return every detail within such a topic, just the term that can encapsulate the entirety of that conversational excahnge in it."
+                                 f"Each topic must include a brief 1-2 sentence explanation of the depth and context in which it was discussed."
+                                 f"your response must be acurrate and not mix topics from one subject to another, or overestimate the depth of the discussion"
+                                 f"You'll be given message history of all chat sessions they user ever had in the user prompt."
+                                 f"Avoid returning multiple topics when there's not much significant change in the message history given to you.")
 
                 Topics = client.chat.completions.create(
-                            model="openai/gpt-oss-120b",
-                            response_format={"type": "json_object"},
-                            messages=[{"role": "system", "content":system_prompt}] + clean_history +
-                            [{"role": "user", "content":
-                                    f"Now return the JSON where each key is a subject name and the value is a list of topics discussed ub that subject's sessions,"
-                                    f"with breif explanation of the depth covered.Sessions and their subjects:"
-                                    f"{db.execute('SELECT sessions.id, subjects.subject FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? ', session["user_id"])}"}]
-                        )
+                    model="openai/gpt-oss-120b",
+                    response_format={"type": "json_object"},
+                    messages=[{"role": "system", "content": system_prompt}] + clean_history +
+                    [{"role": "user", "content":
+                              f"Now return the JSON where each key is a subject name and the value is a list of topics discussed ub that subject's sessions,"
+                              f"with breif explanation of the depth covered.Sessions and their subjects:"
+                              f"{db.execute('SELECT sessions.id, subjects.subject FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? ', session["user_id"])}"}]
+                )
 
                 # Returns a JSON which is a dict where each key stores a list that stores a dict with keys topic and depth
                 topics = json.loads(Topics.choices[0].message.content)
@@ -269,7 +277,7 @@ def chat_session(session_id):
                     # Loop over each value in the list topic and insert its values into topics table
                     for value in range(len(topic)):
                         db.execute("INSERT INTO topics (subject, topic, depth, user_id, session_id) VALUES(?, ?, ?, ?, ?)",
-                                subject, topic[value]["topic"],topic[value]["explanation"], session["user_id"], session_id)
+                                   subject, topic[value]["topic"], topic[value]["explanation"], session["user_id"], session_id)
 
             return jsonify({"ai_response": response.choices[0].message.content}), 200
 
@@ -278,7 +286,8 @@ def chat_session(session_id):
 
         # Only greet the user if there is no field in messages table for current session_id
         if not db.execute("SELECT * FROM messages WHERE session_id = ?", session_id):
-            username = db.execute("SELECT username FROM users WHERE id = ?", session["user_id"])[0]["username"]
+            username = db.execute("SELECT username FROM users WHERE id = ?",
+                                  session["user_id"])[0]["username"]
             response = client.chat.completions.create(
                 model="openai/gpt-oss-120b",
                 messages=[
@@ -287,7 +296,8 @@ def chat_session(session_id):
                 ]
             )
 
-            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)", session_id, "assistant", response.choices[0].message.content)
+            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
+                       session_id, "assistant", response.choices[0].message.content)
             chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
             return render_template("chat_interface.html", session_id=session_id, chat_history=chat_history)
 
@@ -433,10 +443,12 @@ def dashboard():
     """ Display user stats """
 
     # Get all subjects user is enrolled in
-    subjects_enrolled = db.execute("SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
+    subjects_enrolled = db.execute(
+        "SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
 
     # Get all sessions per subject the user have
-    sessions_bysubjects = (db.execute("SELECT subjects.subject, COUNT(sessions.id) as session_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? GROUP BY subjects.subject", session["user_id"]))
+    sessions_bysubjects = (db.execute(
+        "SELECT subjects.subject, COUNT(sessions.id) as session_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? GROUP BY subjects.subject", session["user_id"]))
 
     # Connection between topics across different subjects
 
