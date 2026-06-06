@@ -3,18 +3,6 @@
 {% block title %}Chat History{% endblock %}
 
 {% block main %}
-<p><b>Select a from below subject to start a New Chat</b></p>
-<form method="post" action="/chat/history">
-     <div>
-        <select name="subject">
-            <option value="" disabled selected>Select a subject</option>
-        {% for subject in subjects %}
-            <option value="{{ subject }}">{{ subject }}</option>
-        {% endfor %}
-        </select>
-    </div>
-    <input type="submit" value="Start New Chat">
-</form>
 {% if chat_sessions %}
     <table class="table table-striped mt-4">
         <thead>
@@ -30,7 +18,6 @@
                     <td>{{ session.subject }}</td>
                     <td><a href="/chat/{{ session.id }}">{{ session.session_summary }}</a></td>
                     <td>{{ session.created_at }}</td>
-                    <td><form><input type="submit" value="delete-Session" name="{% session.id %}">Delete session</form></td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -38,4 +25,7 @@
 {% else %}
     <p>No chat history found. Start a new chat to see your history here.</p>
 {% endif %}
+<form method="post" action="/chat/history">
+    <input type="submit" value="Start New Chat">
+</form>
 {% endblock %}
