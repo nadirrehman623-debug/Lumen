@@ -528,7 +528,15 @@ def dashboard():
     if user_prompt:
         Connection = model_call(system_prompt, user_prompt, return_type)
 
-        
+        connections = json.load(Connection.choices[0].message.content)
+
+        # Check if the Model returned a list or a single dict object
+        if isinstance(connections, list):
+            connection_list = connections
+        elif "subject" in topics:
+            topics_list = [topics]  # single dict, wrap it
+        else:
+            topics_list = list(topics.values())
 
         app.logger.info(f"Connection: {Connection.choices[0].message.content}")
 
