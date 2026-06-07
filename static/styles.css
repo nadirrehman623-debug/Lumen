@@ -51,3 +51,11 @@ a:hover {
 .text-left {
     text-align: left;
 }
+
+button {
+    margin-top: 2rem;
+}
+
+.spinner-grow {
+    margin: 2rem;
+}

@@ -5,9 +5,21 @@
 {% endblock %}
 
 {% block main %}
+{% if mode == "new_chat" %}
+<h1>Select a subject</h1>
+<form action="/setup?mode=new_chat" method="post">
+    {% for subject in subjects %}
+    <div>
+        <input type="radio" name="subject" value="{{ subject }}" id="{{ subject }}">
+        <lable for="{{ subject }}">{{ subject }}</lable>
+    </div>
+    {% endfor %}
+    <input type="submit" value="Start Chat">
+</form>
+{% else %}
     <h1>Setup</h1>
     <p>Please select at least one subject:</p>
-    <form action="/setup" method="post">
+    <form action="/setup?mode=getting_started" method="post">
         {% for subject in subjects %}
             <div>
                 <input type="checkbox" name="subjects" value="{{ subject }}" id="{{ subject }}">
@@ -16,4 +28,5 @@
         {% endfor %}
         <button type="submit">Submit</button>
     </form>
+{% endif %}
 {% endblock %}

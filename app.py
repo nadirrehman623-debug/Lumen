@@ -7,7 +7,7 @@ from flask import Flask, flash, redirect, render_template, request, session, abo
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import login_required
+from helpers import login_required, logout_required
 # Configure application
 app = Flask(__name__)
 
@@ -58,6 +58,89 @@ def index():
             return redirect("/setup")
 
 
+@app.route("/setup", methods=["GET", "POST"])
+@login_required
+def setup():
+    """ Allow user to choose subjects """
+
+    # User reached route via POST
+    if request.method == "POST":
+        # if user reached route via new_chat mode
+        if request.args.get("mode") == "new_chat":
+
+            # Get user's selected subject
+            selected_subject = request.form.get("subject")
+            app.logger.info(selected_subject)
+
+            if not selected_subject:
+                flash("Subject is required", "error")
+                return redirect("/setup?mode=new_chat")
+
+            # if the selected subject is in subjects table
+            if db.execute("SELECT * FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject):
+                # Add NEW chat session to sessions table
+                db.execute("INSERT INTO sessions (user_id, subject_id) VALUES(?, ?)", session["user_id"],
+                        db.execute("SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"],
+                        selected_subject)[0]["id"])
+
+                flash("New chat session started", "success")
+
+                # Get the ID of the row we JUST inserted
+                session_id = db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
+
+                return redirect(f"/chat/{session_id}")
+
+            # if the selected subject is not in subjects table with current user's id
+            else:
+                db.execute("INSERT INTO subjects (user_id, subject) VALUES(?, ?)",
+                        session["user_id"], selected_subject)
+
+                db.execute("INSERT INTO sessions (user_id, subject_id) VALUES(?, ?)", session["user_id"], db.execute(
+                    "SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject)[0]["id"])
+
+                flash("New chat session started!", "success")
+
+                # Get the ID of the row we JUST inserted
+                session_id = db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
+
+                return redirect(f"/chat/{session_id}")
+
+        elif request.args.get("mode") == "getting_started":
+
+            # Ensure at least one subject was submitted
+            selected_subjects = request.form.getlist("subjects")
+            if not selected_subjects:
+                flash("Subject is required", "error")
+                return render_template("setup.html", subjects=subjects)
+
+            # Insert all the subjects the user selected into the subjects table with the user's id
+            for subject in selected_subjects:
+                db.execute("INSERT INTO subjects (user_id, subject) VALUES(?, ?)",
+                        session["user_id"], subject)
+
+            flash("Account setup successful! You can now start chatting with Lumen.", "success")
+
+            return redirect("/setup?mode=new_chat")
+
+    # User reached the route via GET
+    else:
+
+        if request.args.get("mode") == "new_chat":
+            return render_template("setup.html", subjects=subjects, mode=request.args.get("mode"))
+
+        elif request.args.get("mode") == "getting_started":
+
+            # Make sure this is the user's first time logging in by checking subjects table with "user_id"
+            rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
+
+            # if there's subjects associated with the user's account
+            if rows:
+                return redirect("/dashboard")
+            # if the query result is empty
+            else:
+                return render_template("setup.html", subjects=subjects,  mode=request.args.get("mode"))
+
+
 @app.route("/chat/history", methods=["GET", "POST"])
 @login_required
 def chat_history():
@@ -66,43 +149,10 @@ def chat_history():
     # if user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
 
-        # Get user's selected subject
-        selected_subject = request.form.get("subject")
-
-        if not selected_subject:
-            flash("Subject is required", "error")
-            return redirect("/chat/history")
-
-        # if the selected subject is in subjects table
-        if db.execute("SELECT * FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject):
-            # Add NEW chat session to sessions table
-            db.execute("INSERT INTO sessions (user_id, subject_id) VALUES(?, ?)", session["user_id"],
-                       db.execute("SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"],
-                       selected_subject)[0]["id"])
-
-            flash("New chat session started", "success")
-
-            # Get the ID of the row we JUST inserted
-            session_id = db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
-
-            return redirect(f"/chat/{session_id}")
-
-        # if the selected subject is not in subjects table with current user's id
-        else:
-            db.execute("INSERT INTO subjects (user_id, subject) VALUES(?, ?)",
-                       session["user_id"], selected_subject)
-
-            db.execute("INSERT INTO sessions (user_id, subject_id) VALUES(?, ?)", session["user_id"], db.execute(
-                "SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject)[0]["id"])
-
-            flash("New chat session started!", "success")
-
-            # Get the ID of the row we JUST inserted
-            session_id = db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
-
-            return redirect(f"/chat/{session_id}")
-
-        # if User clicked delete session button 
+        # if user clicked start new chat button
+        if "new_chat" in request.form:
+            #redirect the user to setup route
+            return redirect("/setup?mode=new_chat")
 
     # if the user reached route via GET (as by clicking a link or via redirect)
     else:
@@ -128,11 +178,12 @@ def chat_session(session_id):
 
     # get the selected subject for the current chat session from sessions table with the session_id
     selected_subject = db.execute("SELECT subject FROM subjects WHERE id = ?",
-                                  db.execute("SELECT subject_id FROM sessions WHERE id = ?", session_id)[0]["subject_id"])
+                                  db.execute("SELECT subject_id FROM sessions WHERE id = ?", session_id)[0]["subject_id"])[0]["subject"]
 
-    # create a system prompt for the AI agent to follow based on the selected subject for the current chat session
+    # Create a system prompt for the AI agent to follow based on the selected subject for the current chat session
     system_prompt = (f"You are Lumen, a socratic AI assistant designed to help students learn by asking thought-provoking questions. You have access to the user's selected subject for this session, which is {selected_subject}. "
-                     f"You must never answer user's question directly. make sure to ask questions that guide the user to think critically and arrive at the answer on their own. respond with no more than one question unless the user says otherwise,"
+                     f"You must never answer user's question directly. make sure to ask questions that guide the user to think critically and arrive at the answer on their own."
+                     f"Engage warmly with the user's response before asking your next question. Acknowledge what they said, build on it, then guide them further with one focused question."
                      f"Always be respectful and encouraging in your responses yet display a socratic personality in your responses. Your goal is to foster a deep understanding of the subject matter and promote independent thinking. "
                      f"The user is a student seeking help with their studies, and you are here to assist them in their learning journey. if the user asks you a question urelated to the current subjects they are studying, "
                      f"respond with a gentle reminder to stay focused on their studies and ask if they have any questions related to the subjects they are studying, however, if a topic, person, or work has any connection with the subject,"
@@ -152,11 +203,11 @@ def chat_session(session_id):
         # if the summary is NULL then generate summary
         if summary_status[0]["session_summary"] == None:
             summary = client.chat.completions.create(
-                model="openai/gpt-oss-120b",
+                model="llama-3.3-70b-versatile",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Summarize the following conversation in 5 words based on {user_input}"
-                     f"if the input is irrelevant to {selected_subject},"
+                    {"role": "user", "content": f"Summarize the following conversation in about 10 words based on {user_input}"
+                     f"if the input is irrelevant to {selected_subject}, summarize the conversation don't answer to: {user_input}"
                      f"If the topic in user input is such that crosses the lines of two subjects don't return irrelevant"
                      f"only respond exactly with the words:'irrelevant input',"
                      f"when the user input is not in the scope of the subject"
@@ -241,45 +292,53 @@ def chat_session(session_id):
 
                 # Reverse so chronological order
                 recent_messages = recent_messages[::-1]
-                app.logger.info(f"Recent messages: {recent_messages}")
 
                 clean_history = [{"role": msg["role"], "content": msg["content"]}
                                  for msg in recent_messages]
+
+                existing_topics = db.execute("SELECT topic, depth FROM topics WHERE user_id = ? AND session_id = ?", session["user_id"], session_id)
+
+                app.logger.info(f"Topics: {existing_topics}")
 
                 # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
 
                 system_prompt = (f"You need to return all unique topics discussed in the message exchanges."
                                  f"you are required to return a JSON file as your response. No preamble, no markdown backticks, just raw JSON."
-                                 f"make sure to categorize each topic by the subject that was being discussed in that session."
-                                 f"do not generate similar topics for the same subject, only generate multiple topics if the messages have completely shifted the topic."
-                                 f"don't generate multiple topics for slight changes in the conversation, limit such topics to one topic that covers entire scope of that discussion."
+                                 f"Already covered topics: {existing_topics}. Only return NEW topics not already in this list."
                                  f"Topics must be explained relative to the depth they were discussed in the conversation."
                                  f"the Topics you return must be widely recognizable by name, such as 'thermodynamics' in science,"
-                                 f"you are not required to return every detail within such a topic, just the term that can encapsulate the entirety of that conversational excahnge in it."
+                                 f"Only generate a topic if it is genuinely distinct from all topics in the existing topics list. Subtopics and variations do not qualify."
+                                 f"Just return the topic that can encapsulate the entirety of that conversational exchange in it, without losing any relevant change."
                                  f"Each topic must include a brief 1-2 sentence explanation of the depth and context in which it was discussed."
                                  f"your response must be acurrate and not mix topics from one subject to another, or overestimate the depth of the discussion"
-                                 f"You'll be given message history of all chat sessions they user ever had in the user prompt."
-                                 f"Avoid returning multiple topics when there's not much significant change in the message history given to you.")
+                                 f"If multiple topics are clearly part of the same broader concept, merge them into one. For example, backend and frontend development are both Software Development."
+                                 f"You'll be given message history of all chat sessions they user ever had in the user prompt.")
 
                 Topics = client.chat.completions.create(
                     model="openai/gpt-oss-120b",
                     response_format={"type": "json_object"},
                     messages=[{"role": "system", "content": system_prompt}] + clean_history +
                     [{"role": "user", "content":
-                              f"Now return the JSON where each key is a subject name and the value is a list of topics discussed ub that subject's sessions,"
-                              f"with breif explanation of the depth covered.Sessions and their subjects:"
-                              f"{db.execute('SELECT sessions.id, subjects.subject FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? ', session["user_id"])}"}]
+                              f"Now return a JSON array of objects, each with a 'topic' and 'explanation' key. No subject keys."
+                              f"Always return a JSON array, even if there is only one topic. Never return a single object."
+                              f"with breif explanation of the depth covered."}]
                 )
 
                 # Returns a JSON which is a dict where each key stores a list that stores a dict with keys topic and depth
                 topics = json.loads(Topics.choices[0].message.content)
+                app.logger.info(f"Topics structure: {topics}")
 
-                # Loop topics to insert data into topics table
-                for subject, topic in topics.items():
-                    # Loop over each value in the list topic and insert its values into topics table
-                    for value in range(len(topic)):
-                        db.execute("INSERT INTO topics (subject, topic, depth, user_id, session_id) VALUES(?, ?, ?, ?, ?)",
-                                   subject, topic[value]["topic"], topic[value]["explanation"], session["user_id"], session_id)
+                # Check if the Model returned a list or a single dict object
+                if isinstance(topics, list):
+                    topics_list = topics
+                elif "topic" in topics:
+                    topics_list = [topics]  # single dict, wrap it
+                else:
+                    topics_list = list(topics.values())
+
+                for topic in topics_list:
+                    db.execute("INSERT INTO topics (topic, depth, user_id, session_id) VALUES(?, ?, ?, ?)",
+                            topic["topic"], topic["explanation"], session["user_id"], session_id)
 
             return jsonify({"ai_response": response.choices[0].message.content}), 200
 
@@ -310,6 +369,7 @@ def chat_session(session_id):
 
 
 @app.route("/login", methods=["GET", "POST"])
+@logout_required
 def login():
     """ Log user in """
 
@@ -343,7 +403,6 @@ def login():
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
 
-        # Redirect user to home page
         return redirect("/")
 
     # User reached route via GET (as by clicking a link or via redirect)
@@ -352,6 +411,7 @@ def login():
 
 
 @app.route("/register", methods=["GET", "POST"])
+@logout_required
 def register():
     """ Register new users """
 
@@ -383,7 +443,7 @@ def register():
             # Log the user in by remembering their user_id in session
             session["user_id"] = db.execute(
                 "SELECT id FROM users WHERE username = ?", request.form.get("username"))[0]["id"]
-            return redirect("/setup")
+            return redirect("/setup?mode=getting_started")
         except ValueError:
             flash("Username already taken", "error")
             return render_template("register.html")
@@ -405,50 +465,15 @@ def logout():
     return redirect("/")
 
 
-@app.route("/setup", methods=["GET", "POST"])
-@login_required
-def setup():
-    """ Setup user's account when login for the first time """
-
-    # if user reached route via POST (as by submitting a form via POST)
-    if request.method == "POST":
-
-        # Ensure at least one subject was submitted
-        selected_subjects = request.form.getlist("subjects")
-        if not selected_subjects:
-            flash("Subject is required", "error")
-            return render_template("setup.html", subjects=subjects)
-
-        # Insert all the subjects the user selected into the subjects table with the user's id
-        for subject in selected_subjects:
-            db.execute("INSERT INTO subjects (user_id, subject) VALUES(?, ?)",
-                       session["user_id"], subject)
-
-        flash("Account setup successful! You can now start chatting with Lumen.", "success")
-        return redirect("/dashboard")
-
-    else:
-        # Make sure this is the user's first time logging in by checking subjects table with "user_id"
-        rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
-
-        # if there's subjects associated with the user's account
-        if rows:
-            return redirect("/dashboard")
-        # if the query result is empty render the setup page with the list of valid subjects for the user to choose from
-        else:
-            return render_template("setup.html", subjects=subjects)
-
-
 @app.route("/dashboard")
 @login_required
 def dashboard():
     """ Display user stats """
 
-    # Get all subjects user is enrolled in
     subjects_enrolled = db.execute(
         "SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
 
-    # Get all sessions per subject the user have
+    # Get all active sessions per subject the user currently have
     sessions_bysubjects = (db.execute(
         "SELECT subjects.subject, COUNT(sessions.id) as session_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? GROUP BY subjects.subject", session["user_id"]))
 

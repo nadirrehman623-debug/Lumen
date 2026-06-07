@@ -17,3 +17,18 @@ def login_required(f):
 
     return decorated_function
 
+
+def logout_required(f):
+    """
+    Decorate routes to require logout.
+
+     https://flask.palletsprojects.com/en/latest/patterns/viewdecorators/
+     """
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("user_id") is not None:
+            return redirect("chat/history")
+        return f(*args, **kwargs)
+
+    return decorated_function

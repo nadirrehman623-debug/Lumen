@@ -23,9 +23,12 @@
         </tbody>
     </table>
 {% else %}
-    <p>No chat history found. Start a new chat to see your history here.</p>
+    <div class="spinner-grow" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+     <p>No chat history found. Start a new chat to see your history here.</p>
 {% endif %}
 <form method="post" action="/chat/history">
-    <input type="submit" value="Start New Chat">
+    <input type="submit" value="Start New Chat" name="new_chat">
 </form>
 {% endblock %}
