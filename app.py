@@ -29,7 +29,15 @@ client = OpenAI(
 subjects = ["Math", "Philosophy", "Computer Science", "Biology", "Chemistry",
             "Physics", "History", "Literature", "Linguistics"]
 
-# List of all valid difficulty level
+# List of all valid difficulty levels
+difficulty = ["Less comfortable", "More comfortable", "Very comfortable"]
+
+# List of all valid Learning styles
+Learning_styles = ["Strictly socratic, no hints allowed at all.", "Socratic, but a few hints allowed.",
+                   "Socratic, but beginner level guidance."]
+# List of all valid Goals
+Goals = ["Exam preperation", "Enhance critical thinking", ""]
+
 
 # Ensure responses aren't cached
 
