@@ -18,7 +18,7 @@
 </form>
 {% else %}
     <h1>Setup</h1>
-    <p>Please select Your prefered options from below:</p>
+    <p>Please select the difficulty level</p>
     <form action="/setup?mode=getting_started" method="post">
         {% for difficult in difficulty %}
             <div>
@@ -26,13 +26,15 @@
                 <label for="{{ difficult }}">{{ difficult }}</label>
             </div>
         {% endfor %}
+        <p>Please select your prefered Learning style with Lumen</p>
         {% for style in Learning_styles %}
             <div>
                 <input type="radio" name="learning_style" value="{{ style }}" id="{{ style }}">
                 <label for="{{ style }}">{{ style }}</label>
             </div>
         {% endfor %}
-        {% for Goal in Goals %}
+        <p>Please select Your Goal for using Lumen</p>
+        {% for goal in Goals %}
             <div>
                 <input type="radio" name="goal" value="{{ goal }}" id="{{ goal }}">
                 <label for="{{ goal }}">{{ goal }}</label>
