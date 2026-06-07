@@ -229,7 +229,7 @@ def chat_session(session_id):
 
             api_model = "llama-3.3-70b-versatile"
 
-            user_prompt = (
+            system_prompt = (
                 f"Summarize the following conversation in about 10 words based on {user_input}"
                         f"You won't be given entire conversation, you must summarize based on {user_input} only. "
                         f"if the input is irrelevant to {selected_subject}, return exactly: 'irrelevant input'"
@@ -239,6 +239,8 @@ def chat_session(session_id):
                         f"when the user input is not in the scope of the subject, you must not return anything else in this case,"
                         f"not when the user's answer is wrong : {user_input}"
             )
+
+            user_prompt = f"use this: {user_input} to summarize."
 
             summary = model_call(system_prompt, user_prompt, api_model)
 
