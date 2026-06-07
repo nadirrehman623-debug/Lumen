@@ -145,7 +145,7 @@ def setup():
             rows = db.execute("SELECT difficulty, learning_style, Goal FROM Users WHERE id = ?", session["user_id"])
 
             # if rows have data associated with the user's account
-            if rows:
+            if rows == None:
                 return redirect("/dashboard")
             # if the query result is empty
             else:
