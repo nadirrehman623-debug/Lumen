@@ -501,6 +501,18 @@ def dashboard():
 
     # Connection between topics across different subjects
     # Get all topics by subject for current user
-    All_topics = db.execute("SELECT topics.topic , topics.depth, subjects.subject FROM topics INNER JOIN sessions ON topics.session_id = sessions.id INNER JOIN subjects ON sessions.subject_id = subjects.id WHERE topics.user_id = ?", session["user_id"])
+    All_topics = db.execute(
+        "SELECT topics.topic , topics.depth, subjects.subject FROM topics INNER JOIN sessions ON topics.session_id = sessions.id INNER JOIN subjects ON sessions.subject_id = subjects.id WHERE topics.user_id = ?", session["user_id"])
+
+    system_prompt = f"You will be given a list of topics, and the subject they were discussed in, Your task is to return a JSON"
+
+    # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
+    Connection = client.chat.completions.create(
+                model="openai/gpt-oss-120b",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"Greet {username} and ask how you can assist them with their studies today."}
+                ]
+            )
 
     return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
