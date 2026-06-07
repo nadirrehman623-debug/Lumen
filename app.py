@@ -146,7 +146,7 @@ def setup():
 
             # if rows have data associated with the user's account
             if rows == None:
-                return redirect("/dashboard")
+                return redirect("/setup?mode=new_chat")
             # if the query result is empty
             else:
                 return render_template("setup.html", difficulty=difficulty, Learning_styles=Learning_styles, Goals=Goals, mode=request.args.get("mode"))
