@@ -504,20 +504,20 @@ def dashboard():
     All_topics = db.execute(
         "SELECT topics.topic , subjects.subject FROM topics INNER JOIN sessions ON topics.session_id = sessions.id INNER JOIN subjects ON sessions.subject_id = subjects.id WHERE topics.user_id = ?", session["user_id"])
 
-    app.logger.info(All_topics)
-
     system_prompt = (
         f"You will be given a list of topics, and the subject they were discussed in, Your task is to return connecting topics across subjects in a JSON file, "
         f"with subjects and connection as keys and the name of subjects that are connected and a quick 1-2 paragraph summary of how the topics connect as their values."
     )
 
-    topic = []
+    topics = []
     for index in range(len(All_topics)):
-        topic.append(All_topics[index]["topic"], All_topics[index]["subject"])
+        topics.append("topic: " + All_topics[index]["topic"],"subject: " + All_topics[index]["subject"])
 
-    user_prompt =
+    user_prompt = " ".join(topics)
+
+    app.logger.info(user_prompt)
 
     # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
-    Connection = model_call(system_prompt, user_prompt)
+    #Connection = model_call(system_prompt, user_prompt)
 
     return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
