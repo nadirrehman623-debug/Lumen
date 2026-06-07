@@ -229,6 +229,7 @@ def chat_session(session_id):
 
             user_prompt = (
                 f"Summarize the following conversation in about 10 words based on {user_input}"
+                        f"You won't be given entire conversation, you must summarize based on {user_input} only. "
                         f"if the input is irrelevant to {selected_subject}, return exactly: 'irrelevant input'"
                         f"summarize the conversation don't answer to: {user_input}"
                         f"If the topic in user input is such that crosses the lines of two subjects don't return irrelevant"
