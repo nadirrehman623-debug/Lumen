@@ -500,5 +500,6 @@ def dashboard():
         "SELECT subjects.subject, COUNT(sessions.id) as session_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? GROUP BY subjects.subject", session["user_id"]))
 
     # Connection between topics across different subjects
+    
 
     return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
