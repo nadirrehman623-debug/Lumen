@@ -231,7 +231,7 @@ def chat_session(session_id):
                      f"only respond exactly with the words:'irrelevant input',"
                      f"when the user input is not in the scope of the subject"
                      f"not when the user's answer is wrong : {user_input}"
-            
+
             summary = model_call(model, system_prompt, user_prompt)
 
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
@@ -242,15 +242,13 @@ def chat_session(session_id):
             # if the summary response is "irrelevant input"
             if summary_result == "irrelevant input":
                 # Generate a reminder for the user to stay focused on the subject matter
-                response = client.chat.completions.create(
-                    model="openai/gpt-oss-120b",
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": f"Respond with a gentle reminder to stay focused on their studies"
+                model = "openai/gpt-oss-120b"
+
+                user_prompt = f"Respond with a gentle reminder to stay focused on their studies"
                          f"and ask if they have any questions related to the {selected_subject}"
-                         f"since the user input is irrelevant to their studies: {user_input}"}
-                    ]
-                )
+                         f"since the user input is irrelevant to their studies: {user_input}"
+
+                response = model_call(model, system_prompt, user_prompt)
 
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
                            session_id, "assistant", response.choices[0].message.content)
@@ -263,13 +261,9 @@ def chat_session(session_id):
                            summary.choices[0].message.content, session_id)
 
                 # continue with the conversation as normal and get the AI response based on the user input and system prompt
-                response = client.chat.completions.create(
-                    model="openai/gpt-oss-120b",
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_input},
-                    ]
-                )
+                model = "openai/gpt-oss-120b"
+                user_prompt = user_input
+                response = model_call(model, system_prompt, user_prompt)
 
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
                            session_id, "assistant", response.choices[0].message.content)
