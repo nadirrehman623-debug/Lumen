@@ -3,7 +3,10 @@
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL
+    password_hash TEXT NOT NULL,
+    difficulty TEXT,
+    learning_style TEXT,
+    Goal TEXT
     );
 
 -- for subjects table
