@@ -43,7 +43,7 @@ def logout_required(f):
     return decorated_function
 
 
-def model_call(system_prompt,  user_prompt, return_type="string", api_model="openai/gpt-oss-120b", history = [{"role": "none", "content": "none"}]):
+def model_call(system_prompt,  user_prompt, return_type="string", history = [{"role": "none", "content": "none"}], api_model="openai/gpt-oss-120b"):
     """
     Make the call to the LLM.
     default model = openai/gpt-oss-120b
