@@ -51,8 +51,19 @@ def model_call(system_prompt,  user_prompt, return_type="string", history = [{"r
 
     """
 
-    if return_type != "string":
-        if history[0]["role"] != "none":
+    if return_type == "string":
+         response = client.chat.completions.create(
+                    model= api_model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ]
+                )
+
+         return response # for return type 'str'
+
+    else:
+         if history[0]["role"] != "none":
             response = client.chat.completions.create(
                         model= api_model,
                         response_format={"type": "json_object"}, # Returns a JSON
@@ -63,7 +74,7 @@ def model_call(system_prompt,  user_prompt, return_type="string", history = [{"r
 
             return response
 
-        else:
+         else:
             response = client.chat.completions.create(
                     model= api_model,
                     response_format={"type": "json_object"}, # Returns a JSON
@@ -73,15 +84,4 @@ def model_call(system_prompt,  user_prompt, return_type="string", history = [{"r
                     ]
                 )
 
-        return response
-
-    else:
-        response = client.chat.completions.create(
-                    model= api_model,
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
-                    ]
-                )
-
-        return response
+         return response

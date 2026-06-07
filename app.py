@@ -512,7 +512,7 @@ def dashboard():
         f"if no topics are connected, return an empty JSON, the connected topics must have different subjects."
     )
 
-    # constructing user prompt
+    # Constructing user prompt from all topics
     topics = []
     for index in range(len(All_topics)):
         topics.append("topic: " + All_topics[index]["topic"])
@@ -521,8 +521,7 @@ def dashboard():
             topics.append(",")
 
     user_prompt = " ".join(topics)
-    return_type= "JSON"
-    model = ""
+    return_type= "Json"
 
     # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
     if user_prompt:
