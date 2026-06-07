@@ -532,11 +532,10 @@ def dashboard():
 
         # Check if the Model returned a list or a single dict object
         if isinstance(connections, list):
-            connection_list = connections
-        elif "subject" in connections:
-            topics_list = []  # single dict, wrap it
+            for value in connections:
+                db.execute("INSERT INTO connections (user_id, subjects, connection, summary) VALUES(?, ?, ?, ?)", session["user_id"], )
         else:
-            topics_list = list(topics.values())
+            topics_list = list(.values())
 
         app.logger.info(f"Connection: {Connection.choices[0].message.content}")
 
