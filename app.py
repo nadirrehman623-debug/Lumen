@@ -331,7 +331,7 @@ def chat_session(session_id):
                                  f"If multiple topics are clearly part of the same broader concept, merge them into one. For example, backend and frontend development are both Software Development."
                                  f"You'll be given message history of all chat sessions they user ever had in the user prompt.")
 
-                user_prompt = (
+                user_prompt = clean_history + (
                     f"Now return a JSON array of objects, each with a 'topic' and 'explanation' key. No subject keys."
                               f"Always return a JSON array, even if there is only one topic. Never return a single object."
                               f"with breif explanation of the depth covered."
@@ -450,15 +450,19 @@ def register():
 
         # Check if username already taken
         try:
+
             db.execute("INSERT INTO users (username, password_hash) VALUES(?, ?)",
                        request.form.get("username"), hash_pass)
-            flash("Registration successful! Please setup your account.", "success")
+
             # Log the user in by remembering their user_id in session
             session["user_id"] = db.execute(
                 "SELECT id FROM users WHERE username = ?", request.form.get("username"))[0]["id"]
 
+            flash("Registration successful! Please setup your account.", "success")
             return redirect("/setup?mode=getting_started")
+
         except ValueError:
+
             flash("Username already taken", "error")
             return render_template("register.html")
 
@@ -497,9 +501,9 @@ def dashboard():
         "SELECT topics.topic , topics.depth, subjects.subject FROM topics INNER JOIN sessions ON topics.session_id = sessions.id INNER JOIN subjects ON sessions.subject_id = subjects.id WHERE topics.user_id = ?", session["user_id"])
 
     system_prompt = f"You will be given a list of topics, and the subject they were discussed in, Your task is to return a JSON"
+    user_prompt = ""
 
     # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
-    model = "openai/gpt-oss-120b"
-    Connection = model_call(model, system_prompt)
+    Connection = model_call(system_prompt, user_prompt)
 
     return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
