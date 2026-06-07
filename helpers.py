@@ -82,4 +82,4 @@ def model_call(system_prompt,  user_prompt, return_type="string", history = [{"r
                     ]
                 )
 
-        return response.choices[0].message.content
+        return response

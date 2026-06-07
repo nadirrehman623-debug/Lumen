@@ -319,8 +319,6 @@ def chat_session(session_id):
 
                 existing_topics = db.execute("SELECT topic, depth FROM topics WHERE user_id = ? AND session_id = ?", session["user_id"], session_id)
 
-                app.logger.info(f"Topics: {existing_topics}")
-
                 # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
 
                 system_prompt = (f"You need to return all unique topics discussed in the message exchanges."
@@ -525,6 +523,6 @@ def dashboard():
     # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
     Connection = model_call(system_prompt, user_prompt, return_type)
 
-    app.logger.info(f"Connection: {Connection}")
+    app.logger.info(f"Connection: {Connection.choices[0].message.content}")
 
     return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
