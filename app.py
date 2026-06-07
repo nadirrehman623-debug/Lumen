@@ -525,6 +525,6 @@ def dashboard():
     # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
     Connection = model_call(system_prompt, user_prompt, return_type)
 
-    app.logger.info(Connection)
+    app.logger.info(f"Connection: {Connection}")
 
     return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
