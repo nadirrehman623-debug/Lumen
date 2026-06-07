@@ -362,13 +362,10 @@ def chat_session(session_id):
         if not db.execute("SELECT * FROM messages WHERE session_id = ?", session_id):
             username = db.execute("SELECT username FROM users WHERE id = ?",
                                   session["user_id"])[0]["username"]
-            response = client.chat.completions.create(
-                model="openai/gpt-oss-120b",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Greet {username} and ask how you can assist them with their studies today."}
-                ]
-            )
+
+            model = "openai/gpt-oss-120b"
+            user_prompt = f"Greet {username} and ask how you can assist them with their studies today."
+            response = model_call(model, system_prompt, user_prompt)
 
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
                        session_id, "assistant", response.choices[0].message.content)
