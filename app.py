@@ -118,16 +118,22 @@ def setup():
 
         elif request.args.get("mode") == "getting_started":
 
-            # Ensure at least one subject was submitted
-            selected_subjects = request.form.getlist("subjects")
-            if not selected_subjects:
-                flash("Subject is required", "error")
-                return render_template("setup.html", subjects=subjects)
+            # Ensure User gave input
+            if not request.form.get("difficulty"):
+                flash("Difficulty is required", "error")
+                return redirect("setup?mode=getting_started")
 
-            # Insert all the subjects the user selected into the subjects table with the user's id
-            for subject in selected_subjects:
-                db.execute("INSERT INTO subjects (user_id, subject) VALUES(?, ?)",
-                        session["user_id"], subject)
+            elif not request.form.get("learning_style"):
+                flash("Learning style is required", "error")
+                return redirect("setup?mode=getting_started")
+
+            elif not request.form.get("goal"):
+                flash("Goal is required", "error")
+                return redirect("setup?mode=getting_started")
+
+            # Insert all user prefereces the user selected into the users table with the user's id
+            db.execute("INSERT INTO users (difficulty, learning_style, Goal) VALUES(?, ?, ?) WHERE id = ?",
+                    request.form.get("difficulty"), request.form.get("learning_style"), request.form.get("goal"), session["user_id"])
 
             flash("Account setup successful! You can now start chatting with Lumen.", "success")
 
