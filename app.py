@@ -55,7 +55,7 @@ def index():
             return redirect("/chat/history")
         # if user just logged in
         else:
-            return redirect("/setup")
+            return redirect("/setup?mode=new_chat")
 
 
 @app.route("/setup", methods=["GET", "POST"])
