@@ -533,8 +533,8 @@ def dashboard():
         # Check if the Model returned a list or a single dict object
         if isinstance(connections, list):
             connection_list = connections
-        elif "subject" in topics:
-            topics_list = [topics]  # single dict, wrap it
+        elif "subject" in connections:
+            topics_list = []  # single dict, wrap it
         else:
             topics_list = list(topics.values())
 
