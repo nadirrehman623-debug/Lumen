@@ -29,6 +29,8 @@ client = OpenAI(
 subjects = ["Math", "Philosophy", "Computer Science", "Biology", "Chemistry",
             "Physics", "History", "Literature", "Linguistics"]
 
+# List of all valid difficulty level
+
 # Ensure responses aren't cached
 
 
