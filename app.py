@@ -142,7 +142,7 @@ def setup():
         elif request.args.get("mode") == "getting_started":
 
             # Make sure this is the user's first time logging in
-            rows = db.execute("SELECT difficulty, learning_style, Goal FROM Users WHERE user_id = ?", session["user_id"])
+            rows = db.execute("SELECT difficulty, learning_style, Goal FROM Users WHERE id = ?", session["user_id"])
 
             # if rows have data associated with the user's account
             if rows:
