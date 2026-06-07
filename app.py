@@ -504,8 +504,8 @@ def dashboard():
 
     system_prompt = (
         f"You will be given a list of topics, and the subject they were discussed in, Your task is to return connecting topics across subjects in a JSON file, "
-        f"the JSON file must be "
-        f"with subjects and connection as keys and the name of subjects that are connected and a quick 1-2 paragraph summary of how the topics connect as their values."
+        f"Always return a JSON array, and within that file, subjects, connection and summary as keys to the name of subjects that are connected, "
+        f"the topics that are connected and a quick 1-2 paragraph summary of how the topics connect as their values."
         f"if no topics are connected, return an empty JSON, the connected topics must have different subjects."
     )
 
