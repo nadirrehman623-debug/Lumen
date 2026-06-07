@@ -527,7 +527,7 @@ def dashboard():
     if user_prompt:
         Connection = model_call(system_prompt, user_prompt, return_type)
 
-        connections = json.load(Connection.choices[0].message.content)
+        connections = json.loads(Connection.choices[0].message.content)
 
         # Check if the Model returned a list or a dict object
         if isinstance(connections, list):
