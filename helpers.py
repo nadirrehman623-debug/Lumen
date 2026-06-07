@@ -1,3 +1,5 @@
+import os
+
 from flask import redirect, session
 from openai import OpenAI
 from functools import wraps
@@ -46,7 +48,7 @@ def model_call(api_model, system_prompt, user_prompt):
     Make the call to the LLM.
 
     """
-     response = client.chat.completions.create(
+    response = client.chat.completions.create(
                 model= api_model,
                 messages=[
                     {"role": "system", "content": system_prompt},

@@ -224,13 +224,17 @@ def chat_session(session_id):
 
         # if the summary is NULL then generate summary
         if summary_status[0]["session_summary"] == None:
+
             model = "llama-3.3-70b-versatile"
-            user_prompt =  f"Summarize the following conversation in about 10 words based on {user_input}"
-                     f"if the input is irrelevant to {selected_subject}, summarize the conversation don't answer to: {user_input}"
-                     f"If the topic in user input is such that crosses the lines of two subjects don't return irrelevant"
-                     f"only respond exactly with the words:'irrelevant input',"
-                     f"when the user input is not in the scope of the subject"
-                     f"not when the user's answer is wrong : {user_input}"
+
+            user_prompt = (
+                f"Summarize the following conversation in about 10 words based on {user_input}"
+                        f"if the input is irrelevant to {selected_subject}, summarize the conversation don't answer to: {user_input}"
+                        f"If the topic in user input is such that crosses the lines of two subjects don't return irrelevant"
+                        f"only respond exactly with the words:'irrelevant input',"
+                        f"when the user input is not in the scope of the subject"
+                        f"not when the user's answer is wrong : {user_input}"
+            )
 
             summary = model_call(model, system_prompt, user_prompt)
 
@@ -244,9 +248,11 @@ def chat_session(session_id):
                 # Generate a reminder for the user to stay focused on the subject matter
                 model = "openai/gpt-oss-120b"
 
-                user_prompt = f"Respond with a gentle reminder to stay focused on their studies"
+                user_prompt = (
+                     f"Respond with a gentle reminder to stay focused on their studies"
                          f"and ask if they have any questions related to the {selected_subject}"
                          f"since the user input is irrelevant to their studies: {user_input}"
+                )
 
                 response = model_call(model, system_prompt, user_prompt)
 
@@ -495,12 +501,7 @@ def dashboard():
     system_prompt = f"You will be given a list of topics, and the subject they were discussed in, Your task is to return a JSON"
 
     # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
-    Connection = client.chat.completions.create(
-                model="openai/gpt-oss-120b",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Greet {username} and ask how you can assist them with their studies today."}
-                ]
-            )
+    model = "openai/gpt-oss-120b"
+    Connection = model_call(model, system_prompt)
 
     return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
