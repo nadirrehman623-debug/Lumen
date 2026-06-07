@@ -233,8 +233,8 @@ def chat_session(session_id):
                         f"if the input is irrelevant to {selected_subject}, return exactly: 'irrelevant input'"
                         f"summarize the conversation don't answer to: {user_input}"
                         f"If the topic in user input is such that crosses the lines of two subjects don't return irrelevant"
-                        f"only respond exactly with the words:'irrelevant input',"
-                        f"when the user input is not in the scope of the subject"
+                        f"only respond exactly with the words:'irrelevant input', "
+                        f"when the user input is not in the scope of the subject, you must not return anything else in this case,"
                         f"not when the user's answer is wrong : {user_input}"
             )
 
