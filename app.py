@@ -511,9 +511,11 @@ def dashboard():
         f"with subjects and connection as keys and the name of subjects that are connected and a quick 1-2 paragraph summary of how the topics connect as their values."
     )
 
-    user_input = "All topics: "
+    topic = []
     for index in range(len(All_topics)):
-        user_prompt = +"topic:" + All
+        topic.append("topic: "All_topics[index]["topic"] "subject: "All_topics[index]["subject"]))
+
+    user_prompt =
 
     # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
     Connection = model_call(system_prompt, user_prompt)
