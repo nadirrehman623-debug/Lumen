@@ -132,7 +132,7 @@ def setup():
                 return redirect("setup?mode=getting_started")
 
             # Insert all user prefereces the user selected into the users table with the user's id
-            db.execute("INSERT INTO users (difficulty, learning_style, Goal) VALUES(?, ?, ?) WHERE id = ?",
+            db.execute("UPDATE users SET difficulty = ?, learning_style = ?, Goal = ? WHERE id = ?",
                     request.form.get("difficulty"), request.form.get("learning_style"), request.form.get("goal"), session["user_id"])
 
             flash("Account setup successful! You can now start chatting with Lumen.", "success")
