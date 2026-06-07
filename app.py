@@ -224,18 +224,15 @@ def chat_session(session_id):
 
         # if the summary is NULL then generate summary
         if summary_status[0]["session_summary"] == None:
-            summary = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Summarize the following conversation in about 10 words based on {user_input}"
+            model = "llama-3.3-70b-versatile"
+            user_prompt =  f"Summarize the following conversation in about 10 words based on {user_input}"
                      f"if the input is irrelevant to {selected_subject}, summarize the conversation don't answer to: {user_input}"
                      f"If the topic in user input is such that crosses the lines of two subjects don't return irrelevant"
                      f"only respond exactly with the words:'irrelevant input',"
                      f"when the user input is not in the scope of the subject"
-                     f"not when the user's answer is wrong : {user_input}"}
-                ]
-            )
+                     f"not when the user's answer is wrong : {user_input}"
+            
+            summary = model_call(model, system_prompt, user_prompt)
 
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
                        session_id, "user", user_input)
