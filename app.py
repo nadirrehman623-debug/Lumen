@@ -236,7 +236,7 @@ def chat_session(session_id):
                         f"not when the user's answer is wrong : {user_input}"
             )
 
-            summary = model_call(model, system_prompt, user_prompt)
+            summary = model_call(system_prompt, user_prompt, model)
 
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
                        session_id, "user", user_input)
@@ -246,7 +246,6 @@ def chat_session(session_id):
             # if the summary response is "irrelevant input"
             if summary_result == "irrelevant input":
                 # Generate a reminder for the user to stay focused on the subject matter
-                model = "openai/gpt-oss-120b"
 
                 user_prompt = (
                      f"Respond with a gentle reminder to stay focused on their studies"
@@ -254,7 +253,7 @@ def chat_session(session_id):
                          f"since the user input is irrelevant to their studies: {user_input}"
                 )
 
-                response = model_call(model, system_prompt, user_prompt)
+                response = model_call(system_prompt, user_prompt)
 
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
                            session_id, "assistant", response.choices[0].message.content)
@@ -267,9 +266,8 @@ def chat_session(session_id):
                            summary.choices[0].message.content, session_id)
 
                 # continue with the conversation as normal and get the AI response based on the user input and system prompt
-                model = "openai/gpt-oss-120b"
                 user_prompt = user_input
-                response = model_call(model, system_prompt, user_prompt)
+                response = model_call(system_prompt, user_prompt)
 
                 db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
                            session_id, "assistant", response.choices[0].message.content)
