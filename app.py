@@ -367,9 +367,8 @@ def chat_session(session_id):
             username = db.execute("SELECT username FROM users WHERE id = ?",
                                   session["user_id"])[0]["username"]
 
-            model = "openai/gpt-oss-120b"
             user_prompt = f"Greet {username} and ask how you can assist them with their studies today."
-            response = model_call(model, system_prompt, user_prompt)
+            response = model_call(system_prompt, user_prompt)
 
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
                        session_id, "assistant", response.choices[0].message.content)
@@ -457,6 +456,7 @@ def register():
             # Log the user in by remembering their user_id in session
             session["user_id"] = db.execute(
                 "SELECT id FROM users WHERE username = ?", request.form.get("username"))[0]["id"]
+
             return redirect("/setup?mode=getting_started")
         except ValueError:
             flash("Username already taken", "error")
