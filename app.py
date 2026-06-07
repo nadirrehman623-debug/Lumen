@@ -530,12 +530,13 @@ def dashboard():
 
         connections = json.load(Connection.choices[0].message.content)
 
-        # Check if the Model returned a list or a single dict object
+        # Check if the Model returned a list or a dict object
         if isinstance(connections, list):
-            for value in connections:
-                db.execute("INSERT INTO connections (user_id, subjects, connection, summary) VALUES(?, ?, ?, ?)", session["user_id"], )
+            db.execute("INSERT INTO connections (user_id, subjects, connection, summary) VALUES(?, ?, ?, ?)",
+                       session["user_id"], connections[0]["subjects"], connections[0]["connection"], connections[0]["summary"])
         else:
-            topics_list = list(.values())
+            db.execute("INSERT INTO connections (user_id, subjects, connection, summary) VALUES(?, ?, ?, ?)",
+                       session["user_id"], connections["subjects"], connections["connection"], connections["summary"])
 
         app.logger.info(f"Connection: {Connection.choices[0].message.content}")
 
