@@ -35,9 +35,10 @@ difficulty = ["Less comfortable", "More comfortable", "Very comfortable"]
 # List of all valid Learning styles
 Learning_styles = ["Strictly socratic, no hints allowed at all.", "Socratic, but a few hints allowed.",
                    "Socratic, but beginner level guidance."]
-# List of all valid Goals
-Goals = ["Exam preperation", "Enhance critical thinking", ""]
 
+# List of all valid Goals
+Goals = ["Exam preperation", "Understand a concept deeply", "Debug code", "Learn from scratch",
+         "Strengthen weak areas"]
 
 # Ensure responses aren't cached
 
