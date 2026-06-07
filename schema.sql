@@ -45,7 +45,6 @@ CREATE TABLE topics (
     session_id INTEGER NOT NULL,
     topic TEXT,
     depth TEXT,
-    subject TEXT,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
 );
