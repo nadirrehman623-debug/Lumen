@@ -18,12 +18,24 @@
 </form>
 {% else %}
     <h1>Setup</h1>
-    <p>Please select at least one subject:</p>
+    <p>Please select Your prefered options from below:</p>
     <form action="/setup?mode=getting_started" method="post">
-        {% for subject in subjects %}
+        {% for difficult in difficulty %}
             <div>
-                <input type="checkbox" name="subjects" value="{{ subject }}" id="{{ subject }}">
-                <label for="{{ subject }}">{{ subject }}</label>
+                <input type="radio" name="difficulty" value="{{ difficult }}" id="{{ difficult }}">
+                <label for="{{ difficult }}">{{ difficult }}</label>
+            </div>
+        {% endfor %}
+        {% for style in Learning_styles %}
+            <div>
+                <input type="radio" name="learning_style" value="{{ style }}" id="{{ style }}">
+                <label for="{{ style }}">{{ style }}</label>
+            </div>
+        {% endfor %}
+        {% for Goal in Goals %}
+            <div>
+                <input type="radio" name="goal" value="{{ goal }}" id="{{ goal }}">
+                <label for="{{ goal }}">{{ goal }}</label>
             </div>
         {% endfor %}
         <button type="submit">Submit</button>
