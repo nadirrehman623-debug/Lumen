@@ -519,9 +519,10 @@ def dashboard():
             topics.append(",")
 
     user_prompt = " ".join(topics)
+    return_type= "JSON"
 
     # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
-    Connection = model_call(system_prompt, user_prompt, return_type="JSON")
+    Connection = model_call(system_prompt, user_prompt, return_type)
 
     app.logger.info(Connection)
 
