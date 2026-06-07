@@ -197,9 +197,9 @@ def chat_session(session_id):
     selected_subject = db.execute("SELECT subject FROM subjects WHERE id = ?",
                                   db.execute("SELECT subject_id FROM sessions WHERE id = ?", session_id)[0]["subject_id"])[0]["subject"]
 
-    user_difficulty = db.execute("SELECT difficulty FROM users WHERE id = ?", session["user_id"])
-    Learning_style = db.execute("SELECT difficulty FROM users WHERE id = ?", session["user_id"])
-    Goal = db.execute("SELECT Goal FROM users WHERE id = ?", session["user_id"])
+    user_difficulty = db.execute("SELECT difficulty FROM users WHERE id = ?", session["user_id"])[0]["difficulty"]
+    Learning_style = db.execute("SELECT learning_style FROM users WHERE id = ?", session["user_id"])[0]["learning_style"]
+    Goal = db.execute("SELECT Goal FROM users WHERE id = ?", session["user_id"])[0]["Goal"]
 
     # Create a system prompt for the AI agent to follow based on the selected subject for the current chat session
     system_prompt = (f"You are Lumen, a socratic AI assistant designed to help students learn by asking thought-provoking questions. You have access to the user's selected subject for this session, which is {selected_subject}. "
