@@ -43,18 +43,32 @@ def logout_required(f):
     return decorated_function
 
 
-def model_call(api_model="openai/gpt-oss-120b", return_type="string", system_prompt, user_prompt):
+def model_call(system_prompt,  user_prompt, api_model="openai/gpt-oss-120b", return_type="string"):
     """
     Make the call to the LLM.
     default model = openai/gpt-oss-120b
+    default return_type = strings
 
     """
-    response = client.chat.completions.create(
-                model= api_model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ]
-            )
+    if return_type == "string":
+        response = client.chat.completions.create(
+                    model= api_model,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ]
+                )
 
-    return response
+        return response
+
+    else:
+        response = client.chat.completions.create(
+                    model= api_model,
+                    response_format={"type": "json_object"}, # Returns a JSON
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ]
+                )
+
+        return response
