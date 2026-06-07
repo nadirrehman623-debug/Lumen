@@ -229,7 +229,7 @@ def chat_session(session_id):
 
             api_model = "llama-3.3-70b-versatile"
 
-            summary_prompt = (
+            summary_prompt = system_prompt + (
                 f"Summarize the following conversation in about 10 words based on {user_input}"
                         f"You won't be given entire conversation, you must summarize based on {user_input} only. "
                         f"if the input is irrelevant to {selected_subject}, return exactly: 'irrelevant input'"
