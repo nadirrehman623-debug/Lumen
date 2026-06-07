@@ -331,7 +331,7 @@ def chat_session(session_id):
                                  f"If multiple topics are clearly part of the same broader concept, merge them into one. For example, backend and frontend development are both Software Development."
                                  f"You'll be given message history of all chat sessions they user ever had in the user prompt.")
 
-                user_prompt = clean_history + (
+                user_prompt = (
                     f"Now return a JSON array of objects, each with a 'topic' and 'explanation' key. No subject keys."
                               f"Always return a JSON array, even if there is only one topic. Never return a single object."
                               f"with breif explanation of the depth covered."
@@ -339,7 +339,7 @@ def chat_session(session_id):
 
                 return_type = "JSON"
 
-                Topics = model_call(system_prompt, user_prompt, return_type)
+                Topics = model_call(system_prompt, user_prompt, return_type, clean_history)
 
                 # Returns a JSON which is a dict where each key stores a list that stores a dict with keys topic and depth
                 topics = json.loads(Topics.choices[0].message.content)
