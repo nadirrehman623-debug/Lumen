@@ -1,5 +1,12 @@
 from flask import redirect, session
+from openai import OpenAI
 from functools import wraps
+
+# Initialize OpenAI client
+client = OpenAI(
+    api_key=os.environ["GROQ_API_KEY"],
+    base_url="https://api.groq.com/openai/v1"
+)
 
 
 def login_required(f):
@@ -32,3 +39,18 @@ def logout_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+
+def model_call(system_prompt, user_prompt):
+    """
+    to call the model: openai/gpt-oss-120b
+    """
+     response = client.chat.completions.create(
+                model="openai/gpt-oss-120b",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ]
+            )
+
+    return response
