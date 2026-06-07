@@ -528,6 +528,8 @@ def dashboard():
     if user_prompt:
         Connection = model_call(system_prompt, user_prompt, return_type)
 
+        
+
         app.logger.info(f"Connection: {Connection.choices[0].message.content}")
 
     return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
