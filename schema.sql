@@ -51,3 +51,12 @@ CREATE TABLE topics (
 );
 
 
+-- for connections table
+CREATE TABLE connections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    subjects TEXT NOT NULL,
+    connection TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+)
