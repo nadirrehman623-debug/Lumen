@@ -62,6 +62,7 @@ def model_call(system_prompt,  user_prompt, return_type="string", history = [{"r
                     )
 
             return response
+        
         else:
             response = client.chat.completions.create(
                     model= api_model,
