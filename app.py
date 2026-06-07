@@ -141,15 +141,15 @@ def setup():
 
         elif request.args.get("mode") == "getting_started":
 
-            # Make sure this is the user's first time logging in by checking subjects table with "user_id"
-            rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
+            # Make sure this is the user's first time logging in
+            rows = db.execute("SELECT difficulty, learning_style, Goal FROM Users WHERE user_id = ?", session["user_id"])
 
-            # if there's subjects associated with the user's account
+            # if rows have data associated with the user's account
             if rows:
                 return redirect("/dashboard")
             # if the query result is empty
             else:
-                return render_template("setup.html", subjects=subjects,  mode=request.args.get("mode"))
+                return render_template("setup.html", difficulty=difficulty, Learning_styles=Learning_styles, Goals=Goals, mode=request.args.get("mode"))
 
 
 @app.route("/chat/history", methods=["GET", "POST"])
