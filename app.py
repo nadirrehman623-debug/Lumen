@@ -507,17 +507,22 @@ def dashboard():
     system_prompt = (
         f"You will be given a list of topics, and the subject they were discussed in, Your task is to return connecting topics across subjects in a JSON file, "
         f"with subjects and connection as keys and the name of subjects that are connected and a quick 1-2 paragraph summary of how the topics connect as their values."
+        f"if no topics are connected, return an empty JSON, the connected topics must have different subjects."
     )
 
+    # constructing user prompt
     topics = []
     for index in range(len(All_topics)):
-        topics.append("topic: " + All_topics[index]["topic"],"subject: " + All_topics[index]["subject"])
+        topics.append("topic: " + All_topics[index]["topic"])
+        topics.append("subject: " + All_topics[index]["subject"])
+        if index > 0:
+            topics.append(",")
 
     user_prompt = " ".join(topics)
 
-    app.logger.info(user_prompt)
-
     # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
-    #Connection = model_call(system_prompt, user_prompt)
+    Connection = model_call(system_prompt, user_prompt, return_type="JSON")
+
+    app.logger.info(Connection)
 
     return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
