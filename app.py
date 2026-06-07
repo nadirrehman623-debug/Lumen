@@ -504,6 +504,8 @@ def dashboard():
     All_topics = db.execute(
         "SELECT topics.topic , topics.depth, subjects.subject FROM topics INNER JOIN sessions ON topics.session_id = sessions.id INNER JOIN subjects ON sessions.subject_id = subjects.id WHERE topics.user_id = ?", session["user_id"])
 
+    app.logger.info(All_topics)
+
     system_prompt = f"You will be given a list of topics, and the subject they were discussed in, Your task is to return a JSON"
     user_prompt = ""
 
