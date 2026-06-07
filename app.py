@@ -229,7 +229,7 @@ def chat_session(session_id):
 
             api_model = "llama-3.3-70b-versatile"
 
-            system_prompt = (
+            summary_prompt = (
                 f"Summarize the following conversation in about 10 words based on {user_input}"
                         f"You won't be given entire conversation, you must summarize based on {user_input} only. "
                         f"if the input is irrelevant to {selected_subject}, return exactly: 'irrelevant input'"
@@ -242,7 +242,7 @@ def chat_session(session_id):
 
             user_prompt = f"use this: {user_input} to summarize."
 
-            summary = model_call(system_prompt, user_prompt, api_model)
+            summary = model_call(summary_prompt, user_prompt, api_model)
 
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
                        session_id, "user", user_input)
