@@ -496,15 +496,6 @@ def logout():
 def dashboard():
     """ Display user stats """
 
-    subjects_enrolled = db.execute(
-        "SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
-
-    # Get all active sessions per subject the user currently have
-    sessions_bysubjects = (db.execute(
-        "SELECT subjects.subject, COUNT(sessions.id) as session_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? GROUP BY subjects.subject", session["user_id"]))
-
-    connected_topics = db.execute("SELECT connection FROM connections WHERE user_id = ?", session["user_id"])
-
     # if User reached the route via POST
     if request.method == "POST":
 
@@ -524,6 +515,9 @@ def dashboard():
                     topics.append(",")
 
             user_prompt = " ".join(topics)
+
+            # Get connected topics from connections table
+            connected_topics = db.execute("SELECT connection FROM connections WHERE user_id = ?", session["user_id"])
 
             # Clean list of connected topics
             existing_connections = clean_list(connected_topics)
@@ -559,4 +553,13 @@ def dashboard():
 
     # User reached the route via GET
     else:
-        return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
+        subjects_enrolled = db.execute(
+            "SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
+
+        # Get all active sessions per subject the user currently have
+        sessions_bysubjects = (db.execute(
+            "SELECT subjects.subject, COUNT(sessions.id) as session_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? GROUP BY subjects.subject", session["user_id"]))
+
+        connections = db.execute("SELECT * FROM connections WHERE user_id = ?", session["user_id"])
+
+        return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects, connections=connections)
