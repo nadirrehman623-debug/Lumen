@@ -46,7 +46,7 @@ def logout_required(f):
 def model_call(system_prompt,  user_prompt, return_type="string", history = None, api_model="openai/gpt-oss-120b"):
     """
     Make the call to the LLM.
-    Default Model = openai/gpt-oss-120b
+    default model = openai/gpt-oss-120b
     default return_type = strings
     """
 
@@ -62,20 +62,7 @@ def model_call(system_prompt,  user_prompt, return_type="string", history = None
          return response # for return type 'str'
 
     else:
-         if history == None:
-
-            response = client.chat.completions.create(
-                    model= api_model,
-                    response_format={"type": "json_object"}, # Returns a JSON
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt}
-                    ]
-                )
-
-            return response
-
-         else:
+         if history:
             response = client.chat.completions.create(
                         model= api_model,
                         response_format={"type": "json_object"}, # Returns a JSON
@@ -86,6 +73,17 @@ def model_call(system_prompt,  user_prompt, return_type="string", history = None
 
             return response
 
+         else:
+            response = client.chat.completions.create(
+                    model= api_model,
+                    response_format={"type": "json_object"}, # Returns a JSON
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ]
+                )
+
+         return response
 
 
 def clean_list(list):
