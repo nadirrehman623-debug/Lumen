@@ -532,8 +532,8 @@ def dashboard():
 
         user_prompt = " ".join(topics)
 
-        # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
-        if not user_prompt:
+
+        if user_prompt:
 
             Connection = model_call(system_prompt, user_prompt, return_type="JSON")
 
