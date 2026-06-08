@@ -34,7 +34,7 @@
         </tbody>
     </table>
 <p>See insightful connections between the topics of your chat across different subjects</p>
-{% for connection in connections %}
+{% for subject_pair, conns in connections.items() %}
 <div class="accordion accordion-flush" id="accordionFlushExample">
   <div class="accordion-item">
     <h2 class="accordion-header" id="flush-headingOne">
