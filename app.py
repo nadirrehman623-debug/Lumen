@@ -534,7 +534,18 @@ def dashboard():
 
     # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
     if not user_prompt:
+
         # Check for existing connections before calling the model
+        index = 0
+        for index in len(topics):
+            # if the index of topics is even (because every even element in topics store a topic)
+            if index % 2 == 0:
+                # compare the words on that index to the entire connected topics list
+                for word in connected_topics:
+                    
+
+        # if words match return
+        # if nothing match call the model to generate connected topics
 
         Connection = model_call(system_prompt, user_prompt, return_type)
 
