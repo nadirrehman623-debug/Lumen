@@ -320,7 +320,9 @@ def chat_session(session_id):
                 clean_history = [{"role": msg["role"], "content": msg["content"]}
                                  for msg in recent_messages]
 
-                existing_topics = db.execute("SELECT topic, depth FROM topics WHERE user_id = ? AND session_id = ?", session["user_id"], session_id)
+                existing_topics = db.execute("SELECT topic FROM topics WHERE user_id = ? AND session_id = ?", session["user_id"], session_id)
+
+                existing_topics = [topic["topic"] for topic in existing_topics]
 
                 # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
 
