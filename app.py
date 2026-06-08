@@ -528,8 +528,12 @@ def dashboard():
 
     connected_topics = db.execute("SELECT connection FROM connections WHERE user_id = ?", session["user_id"])
 
+    connected_topics = clean_list(connected_topics)
+
+    app.logger.info(connected_topics)
+
     # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
-    if user_prompt:
+    if not user_prompt:
         # Check for existing connections before calling the model
 
         Connection = model_call(system_prompt, user_prompt, return_type)
