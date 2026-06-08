@@ -503,53 +503,54 @@ def dashboard():
     sessions_bysubjects = (db.execute(
         "SELECT subjects.subject, COUNT(sessions.id) as session_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? GROUP BY subjects.subject", session["user_id"]))
 
-    # Connection between topics across different subjects
-    # Get all topics by subject for current user
-    All_topics = db.execute(
-        "SELECT topics.topic , subjects.subject FROM topics INNER JOIN sessions ON topics.session_id = sessions.id INNER JOIN subjects ON sessions.subject_id = subjects.id WHERE topics.user_id = ?", session["user_id"])
-
-    system_prompt = (
-        f"You will be given a list of topics, and the subject they were discussed in, Your task is to return connecting topics across subjects in a JSON file, "
-        f"Always return a JSON array (a list), and within that file, subjects, connection and summary as keys to the name of subjects that are connected, "
-        f"the topics that are connected and a quick 1-2 paragraph summary of how the topics connect as their values. and the values must be strings, not lists. "
-        f"if no topics are connected, return an empty JSON, the connected topics must have different subjects."
-    )
-
-    # Constructing user prompt from all topics
-    topics = []
-    for index in range(len(All_topics)):
-        topics.append("topic: " + All_topics[index]["topic"])
-        topics.append("subject: " + All_topics[index]["subject"])
-        if index > 0 and index < len(All_topics) - 1:
-            topics.append(",")
-
-    user_prompt = " ".join(topics)
-    return_type= "Json"
-
     connected_topics = db.execute("SELECT connection FROM connections WHERE user_id = ?", session["user_id"])
 
-    connected_topics = clean_list(connected_topics)
+    # Clean list of connected topics
+    connected_List = clean_list(connected_topics)
 
-    app.logger.info(All_topics)
+    # if user reached via POST
+    if request.method == "POST":
+        # Get all topics by subject for current user
+        All_topics = db.execute(
+            "SELECT topics.topic , subjects.subject FROM topics INNER JOIN sessions ON topics.session_id = sessions.id INNER JOIN subjects ON sessions.subject_id = subjects.id WHERE topics.user_id = ?", session["user_id"])
 
-    # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
-    if not user_prompt:
+        system_prompt = (
+            f"You will be given a list of topics, and the subject they were discussed in, Your task is to return connecting topics across subjects in a JSON file, "
+            f"Always return a JSON array (a list), and within that file, subjects, connection and summary as keys to the name of subjects that are connected, "
+            f"the topics that are connected and a quick 1-2 paragraph summary of how the topics connect as their values. and the values must be strings, not lists. "
+            f"if no topics are connected, return an empty JSON, the connected topics must have different subjects."
+        )
 
-        # Check for existing connections before calling the model
+        # Constructing user prompt from all topics
+        topics = []
+        for index in range(len(All_topics)):
+            topics.append("topic: " + All_topics[index]["topic"])
+            topics.append("subject: " + All_topics[index]["subject"])
+            if index > 0 and index < len(All_topics) - 1:
+                topics.append(",")
+
+        user_prompt = " ".join(topics)
+
+        app.logger.info(All_topics)
+
+        # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
+        if not user_prompt:
+
+            # Check for existing connections before calling the model
 
 
-        Connection = model_call(system_prompt, user_prompt, return_type)
+            Connection = model_call(system_prompt, user_prompt, return_type="JSON")
 
-        connections = json.loads(Connection.choices[0].message.content)
+            connections = json.loads(Connection.choices[0].message.content)
 
-        # Check if the Model returned a list or a dict object
-        if isinstance(connections, list):
-            db.execute("INSERT INTO connections (user_id, subjects, connection, summary) VALUES(?, ?, ?, ?)",
-                       session["user_id"], connections[0]["subjects"], connections[0]["connection"], connections[0]["summary"])
-        else:
-            db.execute("INSERT INTO connections (user_id, subjects, connection, summary) VALUES(?, ?, ?, ?)",
-                       session["user_id"], connections["subjects"], connections["connection"], connections["summary"])
+            # Check if the Model returned a list or a dict object
+            if isinstance(connections, list):
+                db.execute("INSERT INTO connections (user_id, subjects, connection, summary) VALUES(?, ?, ?, ?)",
+                        session["user_id"], connections[0]["subjects"], connections[0]["connection"], connections[0]["summary"])
+            else:
+                db.execute("INSERT INTO connections (user_id, subjects, connection, summary) VALUES(?, ?, ?, ?)",
+                        session["user_id"], connections["subjects"], connections["connection"], connections["summary"])
 
-        app.logger.info(f"Connection: {Connection.choices[0].message.content}")
+            app.logger.info(f"Connection: {Connection.choices[0].message.content}")
 
     return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
