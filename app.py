@@ -574,4 +574,4 @@ def dashboard():
 
         user_info = db.execute("SELECT username, difficulty, learning_style, Goal FROM users WHERE id = ?", session["user_id"])
 
-        return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects, connections=grouped, user_info=user_info)
+        return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects, connections=grouped, user_info=user_info, difficulty=)
