@@ -523,11 +523,12 @@ def dashboard():
     user_prompt = " ".join(topics)
     return_type= "Json"
 
-    connected_topics = db.execute("SELECT FROM connections WHERE ")
+    connected_topics = db.execute("SELECT connection FROM connections WHERE user_id = ?", session["user_id"])
 
     # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
     if user_prompt:
-        # Check for existing connections 
+        # Check for existing connections before calling the model
+
         Connection = model_call(system_prompt, user_prompt, return_type)
 
         connections = json.loads(Connection.choices[0].message.content)
