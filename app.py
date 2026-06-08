@@ -3,6 +3,7 @@ import os
 from cs50 import SQL
 from openai import OpenAI
 import json
+from itertools import groupby
 from flask import Flask, flash, redirect, render_template, request, session, abort, jsonify
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -565,5 +566,11 @@ def dashboard():
             "SELECT subjects.subject, COUNT(sessions.id) as session_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? GROUP BY subjects.subject", session["user_id"]))
 
         connections = db.execute("SELECT * FROM connections WHERE user_id = ?", session["user_id"])
+
+        # Storing all connections that share same pair of subjects together
+        grouped = {}
+        for conn in connections:
+            key = conn["subjects"]
+            grouped.setdefault(key, []).append(conn)
 
         return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects, connections=connections)
