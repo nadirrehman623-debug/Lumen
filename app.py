@@ -344,7 +344,7 @@ def chat_session(session_id):
 
                 return_type = "JSON"
 
-                Topics = model_call(system_prompt, user_prompt, return_type, clean_history)
+                Topics = model_call(system_prompt, user_prompt, return_type, history=clean_history)
 
                 # Returns a JSON which is a dict where each key stores a list that stores a dict with keys topic and depth
                 topics = json.loads(Topics.choices[0].message.content)
