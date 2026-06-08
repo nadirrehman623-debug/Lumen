@@ -505,20 +505,21 @@ def dashboard():
 
     connected_topics = db.execute("SELECT connection FROM connections WHERE user_id = ?", session["user_id"])
 
-    # Clean list of connected topics
-    connected_List = clean_list(connected_topics)
-
-    # if user reached via POST
+    # if User reached the route via POST
     if request.method == "POST":
         # Get all topics by subject for current user
         All_topics = db.execute(
             "SELECT topics.topic , subjects.subject FROM topics INNER JOIN sessions ON topics.session_id = sessions.id INNER JOIN subjects ON sessions.subject_id = subjects.id WHERE topics.user_id = ?", session["user_id"])
+
+        # Clean list of connected topics
+        connected_list = clean_list(connected_topics)
 
         system_prompt = (
             f"You will be given a list of topics, and the subject they were discussed in, Your task is to return connecting topics across subjects in a JSON file, "
             f"Always return a JSON array (a list), and within that file, subjects, connection and summary as keys to the name of subjects that are connected, "
             f"the topics that are connected and a quick 1-2 paragraph summary of how the topics connect as their values. and the values must be strings, not lists. "
             f"if no topics are connected, return an empty JSON, the connected topics must have different subjects."
+            f"Return an empty JSON when there is no new connected topics to generate, here is a list of already generated connections: {connected_list}"
         )
 
         # Constructing user prompt from all topics
@@ -531,13 +532,8 @@ def dashboard():
 
         user_prompt = " ".join(topics)
 
-        app.logger.info(All_topics)
-
         # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
         if not user_prompt:
-
-            # Check for existing connections before calling the model
-
 
             Connection = model_call(system_prompt, user_prompt, return_type="JSON")
 
@@ -553,4 +549,8 @@ def dashboard():
 
             app.logger.info(f"Connection: {Connection.choices[0].message.content}")
 
-    return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
+            return redirect("/dashboard")
+
+    # User reached the route via GET
+    else:
+        return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
