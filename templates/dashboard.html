@@ -30,9 +30,9 @@
             <label class="btn btn-outline-primary" for="btnradio{{ loop.index }}">{{ difficult }}</label>
         </div>
     {% endfor %}
-    {% for style in learning_styles %}
+    {% for style in Learning_styles %}
         <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-            <input type="radio" class="btn-check" name="btnradio" id="btnradio{{ loop.index }}" autocomplete="off">
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio{{ loop.index +  }}" autocomplete="off">
             <label class="btn btn-outline-primary" for="btnradio{{ loop.index }}">{{ style }}</label>
         </div>
     {% endfor %}
