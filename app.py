@@ -7,7 +7,7 @@ from flask import Flask, flash, redirect, render_template, request, session, abo
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import login_required, logout_required, model_call
+from helpers import login_required, logout_required, model_call, clean_list
 # Configure application
 app = Flask(__name__)
 
@@ -322,10 +322,8 @@ def chat_session(session_id):
 
                 All_topics = db.execute("SELECT topic FROM topics WHERE user_id = ? AND session_id = ?", session["user_id"], session_id)
 
-                existing_topics = []
-                if All_topics:
-                    for key in All_topics:
-                        existing_topics.append(key["topic"])
+                # Get the values of all topics
+                existing_topics = clean_list(All_topics)
 
                 # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
 

@@ -31,8 +31,8 @@ def logout_required(f):
     """
     Decorate routes to require logout.
 
-     https://flask.palletsprojects.com/en/latest/patterns/viewdecorators/
-     """
+    https://flask.palletsprojects.com/en/latest/patterns/viewdecorators/
+    """
 
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -48,7 +48,6 @@ def model_call(system_prompt,  user_prompt, return_type="string", history = None
     Make the call to the LLM.
     default model = openai/gpt-oss-120b
     default return_type = strings
-
     """
 
     if return_type == "string":
@@ -88,7 +87,16 @@ def model_call(system_prompt,  user_prompt, return_type="string", history = None
 
 
 def clean_list(list):
-    clean.list = []
+    """
+    Takes a list of dicts and
+    returns a list of values
+    """
+
+    cleanlist = []
+
     if list:
-        for key in list:
-             clean.list.append(key["topic"])
+        for index in list:
+             for key in index:
+                cleanlist.append(index[key])
+
+    return cleanlist
