@@ -545,6 +545,9 @@ def dashboard():
                     # Split strings into individual words and convert to sets
                     set1 = set(topics[index].split())
                     set2 = set(word.split())
+                    if set1 & set2:
+                        return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
+                    else:
 
         # if words match return
         # if nothing match call the model to generate connected topics
