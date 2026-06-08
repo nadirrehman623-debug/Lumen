@@ -520,7 +520,7 @@ def dashboard():
     for index in range(len(All_topics)):
         topics.append("topic: " + All_topics[index]["topic"])
         topics.append("subject: " + All_topics[index]["subject"])
-        if index > 0:
+        if index > 0 and index < len(All_topics) - 1:
             topics.append(",")
 
     user_prompt = " ".join(topics)
