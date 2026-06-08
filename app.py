@@ -572,4 +572,6 @@ def dashboard():
             key = conn["subjects"]
             grouped.setdefault(key, []).append(conn)
 
-        return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects, connections=grouped)
+        user_info = db.execute("SELECT username, difficulty, learning_style, Goal FROM users WHERE id = ?", session["user_id"])
+
+        return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects, connections=grouped, user_info=user_info)
