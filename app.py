@@ -234,7 +234,7 @@ def chat_session(session_id):
                         f"you must not mention anything like 'user asked to generate summary' or 'summarise in 10 words'."
                         f"You won't be given entire conversation, you must summarize based on {user_input} only. "
                         f"if the input is irrelevant to {selected_subject}, return exactly: 'irrelevant input'"
-                        f"summarize the conversation don't answer to: {user_input}"
+                        f"your only task is to summarize the conversation's scope and what's being asked, you should not answer to: {user_input}"
                         f"If the topic in user input is such that crosses the lines of two subjects don't return irrelevant"
                         f"even if the user input: {user_input} is vague, you should only respond exactly with the words:'irrelevant input', "
                         f"when the user input is not in the scope of the subject, you must not return anything else in this case,"
