@@ -507,33 +507,34 @@ def dashboard():
 
     # if User reached the route via POST
     if request.method == "POST":
+
         # Get all topics by subject for current user
         All_topics = db.execute(
             "SELECT topics.topic , subjects.subject FROM topics INNER JOIN sessions ON topics.session_id = sessions.id INNER JOIN subjects ON sessions.subject_id = subjects.id WHERE topics.user_id = ?", session["user_id"])
 
-        # Clean list of connected topics
-        existing_connections = clean_list(connected_topics)
+        # Check if topics exists
+        if All_topics:
 
-        system_prompt = (
-            f"You will be given a list of topics, and the subject they were discussed in, Your task is to return connecting topics across subjects in a JSON file, "
-            f"Always return a JSON array (a list), and within that file, subjects, connection and summary as keys to the name of subjects that are connected, "
-            f"the topics that are connected and a quick 1-2 paragraph summary of how the topics connect as their values. and the values must be strings, not lists. "
-            f"if no topics are connected, return an empty JSON object not an empty list, the connected topics must have different subjects."
-            f"Already connected topic pairs: {existing_connections}. Only return NEW connections not already in this list."
-        )
+            # Constructing user prompt from all topics
+            topics = []
+            for index in range(len(All_topics)):
+                topics.append("topic: " + All_topics[index]["topic"])
+                topics.append("subject: " + All_topics[index]["subject"])
+                if index > 0 and index < len(All_topics) - 1:
+                    topics.append(",")
 
-        # Constructing user prompt from all topics
-        topics = []
-        for index in range(len(All_topics)):
-            topics.append("topic: " + All_topics[index]["topic"])
-            topics.append("subject: " + All_topics[index]["subject"])
-            if index > 0 and index < len(All_topics) - 1:
-                topics.append(",")
+            user_prompt = " ".join(topics)
 
-        user_prompt = " ".join(topics)
+            # Clean list of connected topics
+            existing_connections = clean_list(connected_topics)
 
-
-        if user_prompt:
+            system_prompt = (
+                f"You will be given a list of topics, and the subject they were discussed in, Your task is to return connecting topics across subjects in a JSON file, "
+                f"Always return a JSON array (a list), and within that file, subjects, connection and summary as keys to the name of subjects that are connected, "
+                f"the topics that are connected and a quick 1-2 paragraph summary of how the topics connect as their values. and the values must be strings, not lists. "
+                f"if no topics are connected, return an empty JSON object not an empty list, the connected topics must have different subjects."
+                f"Already connected topic pairs: {existing_connections}. Only return NEW connections not already in this list."
+            )
 
             Connection = model_call(system_prompt, user_prompt, return_type="JSON")
 
@@ -550,6 +551,10 @@ def dashboard():
 
             app.logger.info(f"Connection: {Connection.choices[0].message.content}")
 
+            return redirect("/dashboard")
+
+        else:
+            flash("No topics to generate connections yet!", "error")
             return redirect("/dashboard")
 
     # User reached the route via GET
