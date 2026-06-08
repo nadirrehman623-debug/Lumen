@@ -524,11 +524,14 @@ def dashboard():
 
             system_prompt = (
                 f"You will be given a list of topics, and the subject they were discussed in, Your task is to return connecting topics across subjects in a JSON file, "
-                f"Always return a JSON array (a list), and within that file, subjects, connection and summary as keys to the name of subjects that are connected, "
+                f"Always return a JSON array, and within that file, subjects, connection and summary as keys to the name of subjects that are connected, "
+                f"Already connected topic pairs: {existing_connections}. Only return NEW connections not already in this list."
                 f"Eaach pair of connected subjects must be seperated by and not '-' or ',' or any other punctuations,"
                 f"the topics that are connected and a quick 1-2 paragraph summary of how the topics connect as their values. and the values must be strings, not lists. "
                 f"if no topics are connected, return an empty JSON object not an empty list, the connected topics must have different subjects."
-                f"Already connected topic pairs: {existing_connections}. Only return NEW connections not already in this list."
+                f"Only generate a connection if the two topics share a direct and non-trivial conceptual overlap."
+                f"Do not generate connections based on loose thematic similarity or forced analogies. If you have to stretch to make the connection, do not include it. "
+                f"A valid connection is one that a professor teaching both subjects would assign as a cross-disciplinary reading."
             )
 
             Connection = model_call(system_prompt, user_prompt, return_type="JSON")
