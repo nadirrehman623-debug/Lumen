@@ -491,7 +491,7 @@ def logout():
     return redirect("/")
 
 
-@app.route("/dashboard")
+@app.route("/dashboard", methods=["GET", "POST"])
 @login_required
 def dashboard():
     """ Display user stats """
@@ -536,7 +536,7 @@ def dashboard():
     if not user_prompt:
 
         # Check for existing connections before calling the model
-        
+
 
         Connection = model_call(system_prompt, user_prompt, return_type)
 
