@@ -85,3 +85,7 @@ def model_call(system_prompt,  user_prompt, return_type="string", history = [{"r
                 )
 
          return response
+
+
+def check_uniqueness():
+    pass
