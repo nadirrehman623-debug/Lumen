@@ -536,21 +536,7 @@ def dashboard():
     if not user_prompt:
 
         # Check for existing connections before calling the model
-        index = 0
-        for index in len(topics):
-            # if the index of topics is even (because every even element in topics store a topic)
-            if index % 2 == 0:
-                # compare the words on that index to the entire connected topics list
-                for word in connected_topics:
-                    # Split strings into individual words and convert to sets
-                    set1 = set(topics[index].split())
-                    set2 = set(word.split())
-                    if set1 & set2:
-                        return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects)
-                    else:
-
-        # if words match return
-        # if nothing match call the model to generate connected topics
+        
 
         Connection = model_call(system_prompt, user_prompt, return_type)
 
