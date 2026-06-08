@@ -530,7 +530,7 @@ def dashboard():
 
     connected_topics = clean_list(connected_topics)
 
-    app.logger.info(connected_topics)
+    app.logger.info(topics)
 
     # Give all topics to the Model and ask it to return connected topics across subjects and a summary response on how they are related
     if not user_prompt:
