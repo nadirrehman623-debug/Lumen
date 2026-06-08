@@ -227,7 +227,7 @@ def chat_session(session_id):
         # if the summary is NULL then generate summary
         if summary_status[0]["session_summary"] == None:
 
-            api_model = "llama-3.3-70b-versatile"
+            model = "llama-3.3-70b-versatile"
 
             summary_prompt = system_prompt + (
                 f"Summarize the following conversation in about 10 words based on {user_input}"
@@ -243,7 +243,7 @@ def chat_session(session_id):
 
             user_prompt = f"use this: {user_input} to summarize."
 
-            summary = model_call(summary_prompt, user_prompt, api_model)
+            summary = model_call(summary_prompt, user_prompt, api_model=model)
 
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
                        session_id, "user", user_input)
