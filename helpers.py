@@ -87,5 +87,8 @@ def model_call(system_prompt,  user_prompt, return_type="string", history = None
          return response
 
 
-def check_uniqueness():
-    pass
+def clean_list(list):
+    clean.list = []
+    if list:
+        for key in list:
+             clean.list.append(key["topic"])
