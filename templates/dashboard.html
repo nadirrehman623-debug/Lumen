@@ -23,13 +23,15 @@
             {% endfor %}
         </ul>
     </div>
-{% for difficult in difficulty %}
-<div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-  <input type="radio" class="btn-check" name="btnradio" id="btnradio{{ loop.index }}" autocomplete="off" checked>
-  <label class="btn btn-outline-primary" for="btnradio{{ loop.index }}">{{ difficult }}</label>
-</div>
-{% endfor %}
-
+<form  method="post" action="/dashboard">
+    {% for difficult in difficulty %}
+        <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio{{ loop.index }}" autocomplete="off" "{% if difficult == user_info[0]["difficulty"]%}">
+            <label class="btn btn-outline-primary" for="btnradio{{ loop.index }}">{{ difficult }}</label>
+        </div>
+    {% endfor %}
+    <button type="submit">Submit</button>
+</form>
     <table class="table table-striped mt-4">
         <thead>
             <tr>
