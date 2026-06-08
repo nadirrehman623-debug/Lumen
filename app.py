@@ -518,7 +518,7 @@ def dashboard():
             f"You will be given a list of topics, and the subject they were discussed in, Your task is to return connecting topics across subjects in a JSON file, "
             f"Always return a JSON array (a list), and within that file, subjects, connection and summary as keys to the name of subjects that are connected, "
             f"the topics that are connected and a quick 1-2 paragraph summary of how the topics connect as their values. and the values must be strings, not lists. "
-            f"if no topics are connected, return an empty JSON, the connected topics must have different subjects."
+            f"if no topics are connected, return an empty JSON object not an empty list, the connected topics must have different subjects."
             f"Already connected topic pairs: {existing_connections}. Only return NEW connections not already in this list."
         )
 
