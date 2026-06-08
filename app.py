@@ -542,7 +542,9 @@ def dashboard():
             if index % 2 == 0:
                 # compare the words on that index to the entire connected topics list
                 for word in connected_topics:
-                    
+                    # Split strings into individual words and convert to sets
+                    set1 = set(topics[index].split())
+                    set2 = set(word.split())
 
         # if words match return
         # if nothing match call the model to generate connected topics
