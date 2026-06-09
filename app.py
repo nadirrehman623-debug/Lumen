@@ -259,7 +259,7 @@ def chat_session(session_id):
                 user_prompt = (
                      f"Respond with a gentle reminder to stay focused on their studies"
                          f"and ask if they have any questions related to the {selected_subject}"
-                         f"since the user input is irrelevant to their studies: {user_input}"
+                         f"since their response is irrelevant to their studies: {user_input}"
                 )
 
                 response = model_call(system_prompt, user_prompt)
@@ -269,12 +269,12 @@ def chat_session(session_id):
 
                 return jsonify({"ai_response": response.choices[0].message.content}), 200
 
-            # otherwise, insert the summary into the sessions table and continue with the conversation as normal
+            # Otherwise, insert the summary into the sessions table and continue with the conversation as normal
             else:
                 db.execute("UPDATE sessions SET session_summary = ? WHERE id = ?",
                            summary.choices[0].message.content, session_id)
 
-                # continue with the conversation as normal and get the AI response based on the user input and system prompt
+                # Continue with the conversation as normal and get the AI response based on the user input and system prompt
                 user_prompt = user_input
                 response = model_call(system_prompt, user_prompt)
 
@@ -282,19 +282,17 @@ def chat_session(session_id):
                            session_id, "assistant", response.choices[0].message.content)
                 return jsonify({"ai_response": response.choices[0].message.content}), 200
 
-        # otherwise, when session_summary != NULL, insert the user input and AI response into messages and continue with the conversation as normal
+        # otherwise, when session_summary != None, insert the user input and AI response into messages
         else:
-            # fetch chat history from messages table
             chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
 
-            # Build messages list for API
+            # Build messages list for contextualizing the conversation for the API
             messages = [{"role": "system", "content": system_prompt}]
 
             # Add chat history to messages list
             for message in chat_history:
                 messages.append({"role": message["role"], "content": message["content"]})
 
-            # Append current user message to messages list
             messages.append({"role": "user", "content": user_input})
 
             response = client.chat.completions.create(
