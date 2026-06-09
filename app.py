@@ -160,17 +160,15 @@ def setup():
 def chat_history():
     """ Display chat history """
 
-    # if user reached route via POST (as by submitting a form via POST)
+    # if user reached route via POST
     if request.method == "POST":
 
         # if user clicked start new chat button
         if "new_chat" in request.form:
-            #redirect the user to setup route
             return redirect("/setup?mode=new_chat")
 
     # if the user reached route via GET (as by clicking a link or via redirect)
     else:
-        # query for all sessions to display
         chat_sessions = db.execute("SELECT * FROM sessions WHERE user_id = ?", session["user_id"])
 
         # get the subject for each chat session from subjects table and add it to the chat_sessions list
