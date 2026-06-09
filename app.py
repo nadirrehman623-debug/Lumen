@@ -325,8 +325,8 @@ def chat_session(session_id):
                 existing_topics = clean_list(All_topics)
 
                 # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
-
-                system_prompt = (f"You need to return all unique topics discussed in the message exchanges."
+                system_prompt = (
+                    f"You need to return all unique topics discussed in the message exchanges."
                                  f"you are required to return a JSON file as your response. No preamble, no markdown backticks, just raw JSON."
                                  f"Already covered topics: {existing_topics}. Only return NEW topics not already in this list."
                                  f"Topics must be explained relative to the depth they were discussed in the conversation."
@@ -335,8 +335,10 @@ def chat_session(session_id):
                                  f"Just return the topic that can encapsulate the entirety of that conversational exchange in it, without losing any relevant change."
                                  f"Each topic must include a brief 1-2 sentence explanation of the depth and context in which it was discussed."
                                  f"your response must be acurrate and not mix topics from one subject to another, or overestimate the depth of the discussion"
-                                 f"If multiple topics are clearly part of the same broader concept, merge them into one. For example, backend and frontend development are both Software Development."
-                                 f"You'll be given message history of all chat sessions they user ever had in the user prompt.")
+                                 f"If multiple topics are clearly part of the same broader concept, merge them into one."
+                                 f"For example, backend and frontend development are both Software Development."
+                                 f"You'll be given message history of all chat sessions they user ever had in the user prompt."
+                )
 
                 user_prompt = (
                     f"Now return a JSON array of objects, each with a 'topic' and 'explanation' key. No subject keys."
