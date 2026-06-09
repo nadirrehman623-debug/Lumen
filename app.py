@@ -436,7 +436,7 @@ def register():
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-        
+
         if not request.form.get("username"):
             flash("Username is required", "error")
             return render_template("register.html")
@@ -494,11 +494,10 @@ def dashboard():
     # if User reached the route via POST
     if request.method == "POST":
 
-        # Get all topics by subject for current user
+
         All_topics = db.execute(
             "SELECT topics.topic , subjects.subject FROM topics INNER JOIN sessions ON topics.session_id = sessions.id INNER JOIN subjects ON sessions.subject_id = subjects.id WHERE topics.user_id = ?", session["user_id"])
 
-        # Check if topics exists
         if All_topics:
 
             # Constructing user prompt from all topics
