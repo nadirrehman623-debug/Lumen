@@ -40,8 +40,6 @@ Learning_styles = ["Strictly socratic, no hints allowed at all", "Socratic, but 
 Goals = ["Exam preperation", "Understand a concept deeply", "Debug code (Experimental feature for computer science students)",
          "Learn from scratch", "Strengthen weak areas"]
 
-# Ensure responses aren't cached
-
 
 @app.after_request
 def after_request(response):
