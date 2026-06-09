@@ -305,10 +305,10 @@ def chat_session(session_id):
             db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
                        session_id, "assistant", response.choices[0].message.content)
 
-            # to get the current count of messages for current session
             message_count = db.execute(
                 "SELECT COUNT(*) as count FROM messages WHERE session_id = ?", session_id)[0]["count"]
 
+            # To delay API call for topic generation
             if message_count % 5 == 0:
                 # Get last 10 messages from history
                 recent_messages = db.execute(
@@ -322,7 +322,6 @@ def chat_session(session_id):
 
                 All_topics = db.execute("SELECT topic FROM topics WHERE user_id = ? AND session_id = ?", session["user_id"], session_id)
 
-                # Get the values of all topics
                 existing_topics = clean_list(All_topics)
 
                 # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
