@@ -238,10 +238,11 @@ def chat_session(session_id):
                         f"your only task is to summarize the conversation's scope based on what the user's response: {user_input} is, "
                         f"and what's being asked, you should not answer to the user's response:{user_input}, only summarize the possible conversation. "
                         f"If the topic in user's response is such that crosses the lines between two subjects don't return irrelevant, "
-                        f"not when the user's answer is wrong : {user_input}"
+                        f"if the user's response:{user_input} is wrong but within the scope of {selected_subject},"
+                        f"you must still return just:'irrelevant input'."
             )
 
-            user_prompt = f"use this: {user_input} to summarize."
+            user_prompt = f"user's response: {user_input} to summarize."
 
             model = "llama-3.3-70b-versatile"
 
@@ -254,7 +255,6 @@ def chat_session(session_id):
 
             # if the summary response is "irrelevant input"
             if summary_result == "irrelevant input":
-                # Generate a reminder for the user to stay focused on the subject matter
 
                 user_prompt = (
                      f"Respond with a gentle reminder to stay focused on their studies"
