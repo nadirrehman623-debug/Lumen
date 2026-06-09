@@ -109,7 +109,6 @@ def setup():
 
                 flash("New chat session started!", "success")
 
-                # Get the ID of the row we JUST inserted
                 session_id = db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
 
                 return redirect(f"/chat/{session_id}")
