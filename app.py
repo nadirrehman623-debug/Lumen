@@ -474,7 +474,11 @@ def register():
         return render_template("register.html")
 
 
+@app.route("/Auth", methods=["GET", "POST"])
+def Auth():
+    """ Authentication route """
 
+    if 
 
 @app.route("/logout", methods=["GET", "POST"])
 @login_required
