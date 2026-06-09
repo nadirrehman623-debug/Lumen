@@ -327,23 +327,20 @@ def chat_session(session_id):
                 # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
                 system_prompt = (
                     f"You need to return all unique topics discussed in the message exchanges."
-                                 f"you are required to return a JSON file as your response. No preamble, no markdown backticks, just raw JSON."
-                                 f"Already covered topics list: {existing_topics}. Only return NEW topics not already in this list."
-                                 f"Topics must be explained relative to the depth they were discussed in the conversation."
-                                 f"the Topics you return must be widely recognizable by name, such as 'thermodynamics' in science,"
-                                 f"Only generate a topic if it is genuinely distinct from all topics in the existing topics list. Subtopics and variations do not qualify."
-                                 f"Just return the topic that can encapsulate the entirety of that conversational exchange in it, without losing any relevant change."
-                                 f"Each topic must include a brief 1-2 sentence explanation of the depth and context in which it was discussed."
-                                 f"your response must be acurrate and not mix topics from one subject to another, or overestimate the depth of the discussion"
-                                 f"If multiple topics are clearly part of the same broader concept, merge them into one."
-                                 f"For example, backend and frontend development are both Software Development."
-                                 f"You'll be given message history of all chat sessions they user ever had in the user prompt."
+                                 f"you are required to return a JSON file as your response. No preamble, no markdown backticks, just raw JSON. "
+                                 f"Already covered topics list: {existing_topics}. Only return NEW topics not already in this list. "
+                                 f"the Topics you return must be widely recognizable by name, such as 'thermodynamics' in science, "
+                                 f"Only generate a topic if it is genuinely distinct from all topics in the existing topics list. Subtopics and variations do not qualify. "
+                                 f"Just return the topic that can encapsulate the entirety of that conversational exchange in it, without losing any relevant change. "
+                                 f"your response must be acurrate and not mix topics from one subject to another, "
+                                 f"If multiple topics are clearly part of the same broader concept, merge them into one. "
+                                 f"For example, backend and frontend development are both Software Development. "
+                                 f"You'll be given message history of all chat sessions they user ever had in the user prompt. "
                 )
 
                 user_prompt = (
-                    f"Now return a JSON array of objects, each with a 'topic' and 'explanation' key. No subject keys."
+                    f"Now return a JSON array of objects, each with a 'topic' key. No subject keys."
                               f"Always return a JSON array, even if there is only one topic. Never return a single object."
-                              f"with breif explanation of the depth covered."
                 )
 
                 return_type = "JSON"
@@ -363,8 +360,8 @@ def chat_session(session_id):
                     topics_list = list(topics.values())
 
                 for topic in topics_list:
-                    db.execute("INSERT INTO topics (topic, depth, user_id, session_id) VALUES(?, ?, ?, ?)",
-                            topic["topic"], topic["explanation"], session["user_id"], session_id)
+                    db.execute("INSERT INTO topics (topic, user_id, session_id) VALUES(?, ?, ?)",
+                            topic["topic"], session["user_id"], session_id)
 
             return jsonify({"ai_response": response.choices[0].message.content}), 200
 
@@ -384,7 +381,7 @@ def chat_session(session_id):
             chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
             return render_template("chat_interface.html", session_id=session_id, chat_history=chat_history)
 
-        # get chat history from messages table with the session_id and render the chat interface
+        # Get chat history from messages table with the session_id and render the chat interface
         else:
             chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
             return render_template("chat_interface.html", session_id=session_id, chat_history=chat_history)
