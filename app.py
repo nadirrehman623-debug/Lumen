@@ -478,18 +478,17 @@ def register():
 def Auth():
     """ Authentication route """
 
-    if 
+    @login_required
+    if request.args.get("mode") == "logout":
 
-@app.route("/logout", methods=["GET", "POST"])
-@login_required
-def logout():
-    """ Log user out """
+        # Forget any user_id
+        session.clear()
 
-    # Forget any user_id
-    session.clear()
+        # Redirect user to login form
+        return redirect("/")
 
-    # Redirect user to login form
-    return redirect("/")
+    elif request.args.get("mode") == "login":
+
 
 
 @app.route("/dashboard", methods=["GET", "POST"])
