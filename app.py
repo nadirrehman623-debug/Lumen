@@ -436,22 +436,19 @@ def register():
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-        # Ensure username was submitted
+        
         if not request.form.get("username"):
             flash("Username is required", "error")
             return render_template("register.html")
 
-        # Ensure password was submitted
         elif not request.form.get("password"):
             flash("Password is required", "error")
             return render_template("register.html")
 
-        # Ensure conformation match with password
         elif request.form.get("password") != request.form.get("confirmation"):
             flash("Passwords do not match", "error")
             return render_template("register.html")
 
-        # Generate hash for the password
         hash_pass = generate_password_hash(request.form.get("password"))
 
         # Check if username already taken
