@@ -230,10 +230,11 @@ def chat_session(session_id):
 
             summary_prompt = system_prompt + (
                 f"Summarize the potential scope of a conversation in about 10 words based on {user_input}"
-                        f"you must not mention anything like 'user asked to generate summary' or 'summarise in 10 words'."
-                        f"You won't be given entire conversation, you must summarize based on {user_input} only. "
-                        f"if the input is irrelevant to {selected_subject}, return exactly: 'irrelevant input'"
-                        f"your only task is to summarize the conversation's scope and what's being asked, you should not answer to: {user_input}"
+                        f"you must not mention anything like 'user asked to generate summary' or 'summarise in 10 words'. "
+                        f"You won't be given entire conversation, you must summarize based on user's first response:{user_input} only. "
+                        f"if user's response is irrelevant to {selected_subject}, return exactly: 'irrelevant input', "
+                        f"your only task is to summarize the conversation's scope based on what the user's response: {user_input} is, "
+                        f"and what's being asked, you should not answer to the user's response:{user_input}, only summarize the possible conversation. "
                         f"If the topic in user input is such that crosses the lines of two subjects don't return irrelevant"
                         f"even if the user input: {user_input} is vague, you should only respond exactly with the words:'irrelevant input', "
                         f"when the user input is not in the scope of the subject, you must not return anything else in this case,"
