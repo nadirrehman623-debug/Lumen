@@ -328,7 +328,7 @@ def chat_session(session_id):
                 system_prompt = (
                     f"You need to return all unique topics discussed in the message exchanges."
                                  f"you are required to return a JSON file as your response. No preamble, no markdown backticks, just raw JSON."
-                                 f"Already covered topics: {existing_topics}. Only return NEW topics not already in this list."
+                                 f"Already covered topics list: {existing_topics}. Only return NEW topics not already in this list."
                                  f"Topics must be explained relative to the depth they were discussed in the conversation."
                                  f"the Topics you return must be widely recognizable by name, such as 'thermodynamics' in science,"
                                  f"Only generate a topic if it is genuinely distinct from all topics in the existing topics list. Subtopics and variations do not qualify."
