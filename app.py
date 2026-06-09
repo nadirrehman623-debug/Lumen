@@ -474,21 +474,16 @@ def register():
         return render_template("register.html")
 
 
-@app.route("/Auth", methods=["GET", "POST"])
-def Auth():
-    """ Authentication route """
+@app.route("/logout", methods=["GET", "POST"])
+@login_required
+def logout():
+    """ Log user out """
 
-    @login_required
-    if request.args.get("mode") == "logout":
+    # Forget any user_id
+    session.clear()
 
-        # Forget any user_id
-        session.clear()
-
-        # Redirect user to login form
-        return redirect("/")
-
-    elif request.args.get("mode") == "login":
-
+    # Redirect user to login form
+    return redirect("/")
 
 
 @app.route("/dashboard", methods=["GET", "POST"])
