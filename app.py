@@ -70,7 +70,7 @@ def index():
 @app.route("/setup", methods=["GET", "POST"])
 @login_required
 def setup():
-    """ Allow user to choose subjects """
+    """ Allow user to choose subjects & setup user_preferences """
 
     # User reached route via POST
     if request.method == "POST":
