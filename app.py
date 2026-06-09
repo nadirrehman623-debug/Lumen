@@ -212,22 +212,21 @@ def chat_session(session_id):
                      f"then that topic is relevant to the discussion. also if the user asks you to directly answer their question, "
                      f"respond with a gentle reminder that you are designed to facilitate learning through questioning, not direct answering."
                      f"even if the user's response is vague and confusing , if it is in any way related to the {selected_subject}, you should guide him by asking possible questions about {selected_subject}."
-                     f"Act like socrates in all your responses regardless of the user's tone or behavior, and always ask questions that forces the user to think crtically about the topic at hand. never break character. "
-                     f"Adjust your personality according to the user's tone, and the subject they are studying.")
+                     f"Act like socrates in all your responses regardless of the user's tone or behavior, "
+                     f"respond with a gentle reminder that you are designed to facilitate learning through questioning, not direct answering. "
+                     f"Adjust your personality according to the user's tone, and the subject they are studying."
+    )
 
-    # User reached route via POST (as by submitting a form via POST)
+    # User reached route via POST
     if request.method == "POST":
-        # check if user input is in the request form
+
         if not request.json.get("user_input"):
             return jsonify({"ai_response": "User input is required"}), 400
 
         user_input = request.json.get("user_input")
         summary_status = db.execute("SELECT session_summary FROM sessions WHERE id = ?", session_id)
 
-        # if the summary is NULL then generate summary
         if summary_status[0]["session_summary"] == None:
-
-            model = "llama-3.3-70b-versatile"
 
             summary_prompt = system_prompt + (
                 f"Summarize the potential scope of a conversation in about 10 words based on {user_input}"
@@ -242,6 +241,8 @@ def chat_session(session_id):
             )
 
             user_prompt = f"use this: {user_input} to summarize."
+
+            model = "llama-3.3-70b-versatile"
 
             summary = model_call(summary_prompt, user_prompt, api_model=model)
 
