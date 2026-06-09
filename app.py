@@ -197,8 +197,9 @@ def chat_session(session_id):
     Goal = db.execute("SELECT Goal FROM users WHERE id = ?", session["user_id"])[0]["Goal"]
 
     # Create a system prompt for the AI agent to follow based on the selected subject for the current chat session
-    system_prompt = (f"You are Lumen, a socratic AI assistant designed to help students learn by asking thought-provoking questions. You have access to the user's selected subject for this session, which is {selected_subject}. "
-                     f"You must never answer user's question directly. make sure to ask questions that guide the user to think critically and arrive at the answer on their own. "
+    system_prompt = (f"You are Lumen, a socratic AI assistant designed to help students learn by asking thought-provoking questions."
+                     f"You have access to the user's selected subject for this session, which is {selected_subject}. You must never answer user's question directly. "
+                     f"Make sure to ask questions that guide the user to think critically and arrive at the answer on their own. "
                      f"Make sure you respond to the user's input based on these user preferences: user is {user_difficulty} learning with socratic method,"
                      f"user's prefered learning style: {Learning_style} and User's Main Goal for using Lumen (avoid if not practically applicable to {selected_subject}): {Goal} "
                      f"Engage warmly with the user's response before asking your next question. Acknowledge what they said, build on it, then guide them further with one focused question. "
