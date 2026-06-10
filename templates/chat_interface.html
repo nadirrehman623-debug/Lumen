@@ -8,12 +8,11 @@
 <div class="d-flex" style="height: 90vh;">
 <div id="sessions" style="width: 25%; overflow-y: auto;">
     {% if chat_sessions %}
-        <ul class="list">
-            <li class="list-item-disabled" aria-disabled="true">Chats</li>
+        <ul class="list" style="text-align:left;">
+            <li class="list-item-disabled" aria-disabled="true">Recent Chats</li>
         {% for session in chat_sessions|reverse %}
             <li class="list-group-item">
-                <a href="/chat?mode={{ session.id }}">{{ session.session_summary }}</a>
-                <b>{{ session.time_ago }}</b>
+                <a href="/chat?mode=session_{{ session.id }}">{% if session.session_summary == None %} New session {% else %} {{ session.session_summary }} {% endif %}</a>
             </li>
         {% endfor %}
         </ul>
@@ -27,8 +26,9 @@
         <input type="submit" value="Start New Chat" name="new_chat">
     </form>
 </div>
-{% if chat_history %}
+
 <div style="width: 75%; display: flex; flex-direction: column; height: 100%;">
+{% if chat_history %}
 <div id="chat-history" class="d-flex flex-column gap-3 mb-4"  style="flex: 1; overflow-y: auto;">
         {% for message in chat_history %}
         <div class="message {{ message.role }}">
@@ -36,7 +36,7 @@
         </div>
         {% endfor %}
     </div>
-    <form method="post" action="/chat?mode={{ session_id }}" id="chat-form">
+    <form method="post" action="/chat?mode=session_{{ session_id }}" id="chat-form">
         <div class="mb-3">
             <label for="user-input" class="form-label">Your Message:</label>
             <input type="text" autocomplete="off" class="form-control" id="user-input" name="user_input" required>
@@ -46,7 +46,7 @@
 {% else %}
     <div class="d-flex flex-column gap-3 mb-4" style="flex-direction: top;">
         <h1>Welcome to Lumen...</h1>
-        <p>No messages yet!</p>
+        <p>Click on New chat to start your Learning journey!</p>
     </div>
 {% endif %}
 </div>

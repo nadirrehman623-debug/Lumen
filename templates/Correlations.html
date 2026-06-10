@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}
+  Correlations
+{% endblock %}
+
+
+{% block main %}
+<p>See insightful Correlations between the topics of your chat across different subjects.</p>
+{% for subject_pair, corrs in Correlations.items() %}
+<div class="accordion accordion-flush" id="accordionFlushExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="flush-headingOne">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="flush-collapseOne">
+        {{ subject_pair }}
+      </button>
+    </h2>
+    <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+      {% for corr in corrs %}
+        <div class="accordion-body">
+        <b>{{ corr["connection"] }}</b>
+        <p>{{ corr["summary"] }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endfor %}
+<p><b>Note:</b> Only press when you have discussed new topics with Lumen!</p>
+<form method="post" action="/Correlations">
+    <input type="submit" value="Refresh Correlations" name="refresh">
+</form>
+{% endblock %}

@@ -1,34 +1,33 @@
 {% extends "layout.html" %}
 
-{% block title %}Chat History{% endblock %}
+{% block title %}
+    Chat
+{% endblock %}
 
 {% block main %}
-{% if chat_sessions %}
-    <table class="table table-striped mt-4">
-        <thead>
-            <tr>
-                <th>Subject</th>
-                <th>Chat History</th>
-                <th>Time</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for session in chat_sessions %}
-                <tr>
-                    <td>{{ session.subject }}</td>
-                    <td><a href="/chat/{{ session.id }}">{{ session.session_summary }}</a></td>
-                    <td>{{ session.created_at }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <div class="spinner-grow" role="status">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-     <p>No chat history found. Start a new chat to see your history here.</p>
-{% endif %}
-<form method="post" action="/chat/history">
-    <input type="submit" value="Start New Chat" name="new_chat">
-</form>
+    {% if chat_sessions %}
+        <div class="container text-center">
+            <strong>Recent Chats</strong>
+        {% for session in chat_sessions|reverse %}
+            <div class="row">
+                <div class="col">
+                     <b>{{ session.subject }}</b>
+                </div>
+                <div class="col-6">
+                    <a href="/chat?mode=session_{{ session.id }}">{% if session.session_summary == None %} New session {% else %} {{ session.session_summary }} {% endif %}</a>
+                </div>
+                <div class="col">
+                    <b>{{ session.time_ago }}</b>
+                </div>
+            </div>
+    {% endfor %}
+    {% else %}
+        <div class="spinner-grow text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>No chat history found. Start a new chat to see your history here.</p>
+    {% endif %}
+    <form method="post" action="/chat?mode=sessions">
+        <input type="submit" value="Start New Chat" name="new_chat">
+    </form>
 {% endblock %}

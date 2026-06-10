@@ -39,27 +39,4 @@
             {% endfor %}
         </tbody>
     </table>
-<p>See insightful connections between the topics of your chat across different subjects</p>
-{% for subject_pair, conns in connections.items() %}
-<div class="accordion accordion-flush" id="accordionFlushExample">
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="flush-headingOne">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="false" aria-controls="flush-collapseOne">
-        {{ subject_pair }}
-      </button>
-    </h2>
-    <div id="collapse{{ loop.index }}" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
-      {% for conn in conns %}
-        <div class="accordion-body">
-        <b>{{ conn["connection"] }}</b>
-        <p>{{ conn["summary"] }}</p>
-    </div>
-    {% endfor %}
-  </div>
-</div>
-{% endfor %}
-<p><b>Note:</b> Only press when you have discussed new topics with Lumen!</p>
-<form method="post" action="/dashboard">
-    <input type="submit" value="Refresh Connections" name="refresh">
-</form>
 {% endblock %}
