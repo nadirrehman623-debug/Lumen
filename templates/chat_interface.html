@@ -5,20 +5,51 @@
 {% endblock %}
 
 {% block main %}
-    <div id="chat-history" class="d-flex flex-column gap-3 mb-4" style="min-height: 60vh; max-height: 65vh; overflow-y: auto; padding: 1rem;">
-         {% for message in chat_history %}
+<div class="d-flex" style="height: 90vh;">
+<div id="sessions" style="width: 25%; overflow-y: auto;">
+    {% if chat_sessions %}
+        <ul class="list">
+            <li class="list-item-disabled" aria-disabled="true">Chats</li>
+        {% for session in chat_sessions|reverse %}
+            <li class="list-group-item">
+                <a href="/chat?mode={{ session.id }}">{{ session.session_summary }}</a>
+                <b>{{ session.time_ago }}</b>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <div class="spinner-grow text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>No chat history found. Start a new chat to see your history here.</p>
+    {% endif %}
+    <form method="post" action="/chat?mode=sessions">
+        <input type="submit" value="Start New Chat" name="new_chat">
+    </form>
+</div>
+{% if chat_history %}
+<div style="width: 75%; display: flex; flex-direction: column; height: 100%;">
+<div id="chat-history" class="d-flex flex-column gap-3 mb-4"  style="flex: 1; overflow-y: auto;">
+        {% for message in chat_history %}
         <div class="message {{ message.role }}">
             {{ "You" if message.role == "user" else "Lumen" }}: {{ message.content }}
         </div>
         {% endfor %}
     </div>
-    <form method="post" action="/chat/{{ session_id }}" id="chat-form">
+    <form method="post" action="/chat?mode={{ session_id }}" id="chat-form">
         <div class="mb-3">
             <label for="user-input" class="form-label">Your Message:</label>
             <input type="text" autocomplete="off" class="form-control" id="user-input" name="user_input" required>
         </div>
         <button type="submit" class="btn btn-primary">Send</button>
     </form>
+{% else %}
+    <div class="d-flex flex-column gap-3 mb-4" style="flex-direction: top;">
+        <h1>Welcome to Lumen...</h1>
+        <p>No messages yet!</p>
+    </div>
+{% endif %}
+</div>
     <script>
         const chatForm = document.getElementById('chat-form');
         const chatHistory = document.getElementById('chat-history');

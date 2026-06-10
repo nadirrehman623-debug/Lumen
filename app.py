@@ -7,7 +7,7 @@ from flask import Flask, flash, redirect, render_template, request, session, abo
 from flask_session import Session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import login_required, logout_required, model_call, clean_list
+from helpers import login_required, logout_required, model_call, summary_generator, topics_generator, sessions_history, clean_list
 # Configure application
 app = Flask(__name__)
 
@@ -61,7 +61,7 @@ def index():
         rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
         # if user already have subjects selected
         if rows:
-            return redirect("/chat/history")
+            return redirect("/chat")
         # if user just logged in
         else:
             return redirect("/setup?mode=new_chat")
@@ -82,7 +82,7 @@ def setup():
             app.logger.info(selected_subject)
 
             if not selected_subject:
-                flash("Subject is required", "error")
+                flash("Subject is required", "danger")
                 return redirect("/setup?mode=new_chat")
 
             # if the selected subject is in subjects table
@@ -92,12 +92,13 @@ def setup():
                         db.execute("SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"],
                         selected_subject)[0]["id"])
 
-                flash("New chat session started", "success")
-
                 # Get the ID of the row we JUST inserted
                 session_id = db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
 
-                return redirect(f"/chat/{session_id}")
+                if selected_subject:
+                    flash("New chat session started", "success")
+
+                return redirect(f"/chat?mode={session_id}")
 
             # if the selected subject is not in subjects table with current user's id
             else:
@@ -107,25 +108,26 @@ def setup():
                 db.execute("INSERT INTO sessions (user_id, subject_id) VALUES(?, ?)", session["user_id"], db.execute(
                     "SELECT id FROM subjects WHERE user_id = ? AND subject = ?", session["user_id"], selected_subject)[0]["id"])
 
-                flash("New chat session started!", "success")
-
                 session_id = db.execute("SELECT last_insert_rowid() AS id")[0]["id"]
 
-                return redirect(f"/chat/{session_id}")
+                if selected_subject:
+                    flash("New chat session started", "success")
+
+                return redirect(f"/chat?mode={session_id}")
 
         elif request.args.get("mode") == "getting_started":
 
             # Ensure User gave input
             if not request.form.get("difficulty"):
-                flash("Difficulty is required", "error")
+                flash("Difficulty is required", "danger")
                 return redirect("setup?mode=getting_started")
 
             elif not request.form.get("learning_style"):
-                flash("Learning style is required", "error")
+                flash("Learning style is required", "danger")
                 return redirect("setup?mode=getting_started")
 
             elif not request.form.get("goal"):
-                flash("Goal is required", "error")
+                flash("Goal is required", "danger")
                 return redirect("setup?mode=getting_started")
 
             # Insert all user prefereces the user selected into the users table with the user's id
@@ -155,38 +157,10 @@ def setup():
                 return render_template("setup.html", difficulty=difficulty, Learning_styles=Learning_styles, Goals=Goals, mode=request.args.get("mode"))
 
 
-@app.route("/chat/history", methods=["GET", "POST"])
+@app.route("/chat", methods=["GET", "POST"])
 @login_required
-def chat_history():
-    """ Display chat history """
-
-    # if user reached route via POST
-    if request.method == "POST":
-
-        # if user clicked start new chat button
-        if "new_chat" in request.form:
-            return redirect("/setup?mode=new_chat")
-
-    # if the user reached route via GET (as by clicking a link or via redirect)
-    else:
-        chat_sessions = db.execute("SELECT * FROM sessions WHERE user_id = ?", session["user_id"])
-
-        # get the subject for each chat session from subjects table and add it to the chat_sessions list
-        for chat_session in chat_sessions:
-            chat_session["subject"] = db.execute(
-                "SELECT subject FROM subjects WHERE id = ?", chat_session["subject_id"])[0]["subject"]
-
-        return render_template("chat_history.html", subjects=subjects, chat_sessions=chat_sessions)
-
-
-@app.route("/chat/<session_id>", methods=["GET", "POST"])
-@login_required
-def chat_session(session_id):
-    """ View a specific chat session """
-
-    # check if the session_id is valid and belongs to the current user
-    if not db.execute("SELECT * FROM sessions WHERE id = ? AND user_id = ?", session_id, session["user_id"]):
-        abort(404)
+def chat(session_id):
+    """ Chat interface """
 
     # Fetch the selected subject for the current chat session from sessions table with the session_id
     selected_subject = db.execute("SELECT subject FROM subjects WHERE id = ?",
@@ -220,171 +194,122 @@ def chat_session(session_id):
     # User reached route via POST
     if request.method == "POST":
 
-        if not request.json.get("user_input"):
-            return jsonify({"ai_response": "User input is required"}), 400
+        if request.args.get("mode") == "sessions":
+            # if user clicked start new chat button
+            if "new_chat" in request.form:
+                return redirect("/setup?mode=new_chat")
 
-        user_input = request.json.get("user_input")
-        summary_status = db.execute("SELECT session_summary FROM sessions WHERE id = ?", session_id)
+        elif request.args.get("mode") == "<session_id>":
 
-        if summary_status[0]["session_summary"] == None:
+            # check if the session_id is valid and belongs to the current user
+            if not db.execute("SELECT * FROM sessions WHERE id = ? AND user_id = ?", session_id, session["user_id"]):
+                abort(404)
 
-            summary_prompt = system_prompt + (
-                f"Summarize the potential scope of a conversation in about 10 words based on {user_input}"
-                        f"you must not mention anything like 'user asked to generate summary' or 'summarise in 10 words'. "
-                        f"You won't be given entire conversation, you must summarize based on user's first response:{user_input} only. "
-                        f"if user's response is irrelevant to {selected_subject}, return exactly: 'irrelevant input', "
-                        f"when the user input is not in the scope of {selected_subject}, you must not return anything else, just:'irrelevant input' "
-                        f"If the user's response: {user_input} is vague, you should only respond exactly with the words:'irrelevant input', "
-                        f"your only task is to summarize the conversation's scope based on what the user's response: {user_input} is, "
-                        f"and what's being asked, you should not answer to the user's response:{user_input}, only summarize the possible conversation. "
-                        f"If the topic in user's response is such that crosses the lines between two subjects don't return irrelevant, "
-                        f"if the user's response:{user_input} is wrong but within the scope of {selected_subject},"
-                        f"you must still return just:'irrelevant input'."
-            )
+            if not request.json.get("user_input"):
+                return jsonify({"ai_response": "User input is required"}), 400
 
-            user_prompt = f"user's response: {user_input} to summarize."
+            user_input = request.json.get("user_input")
 
-            model = "llama-3.3-70b-versatile"
+            summary_status = db.execute("SELECT session_summary FROM sessions WHERE id = ?", session_id)
 
-            summary = model_call(summary_prompt, user_prompt, api_model=model)
+            if summary_status[0]["session_summary"] == None:
 
-            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
-                       session_id, "user", user_input)
+                summary_result = summary_generator(user_input, selected_subject, system_prompt, session_id)
 
-            summary_result = summary.choices[0].message.content.lower().strip(".")
+                summary_check = summary_result.lower().strip(".")
 
-            # if the summary response is "irrelevant input"
-            if summary_result == "irrelevant input":
+                # if the summary response is "irrelevant input"
+                if summary_check == "irrelevant input":
 
-                user_prompt = (
-                     f"Respond with a gentle reminder to stay focused on their studies"
-                         f"and ask if they have any questions related to the {selected_subject}"
-                         f"since their response is irrelevant to their studies: {user_input}"
-                )
+                    user_prompt = (
+                            f"Respond with a gentle reminder to stay focused on their studies"
+                                f"and ask if they have any questions related to the {selected_subject}"
+                                f"since their response is irrelevant to their studies: {user_input}"
+                    )
 
-                response = model_call(system_prompt, user_prompt)
+                    response = model_call(system_prompt, user_prompt)
 
-                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
-                           session_id, "assistant", response.choices[0].message.content)
+                    db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
+                                session_id, "assistant", response.choices[0].message.content)
 
-                return jsonify({"ai_response": response.choices[0].message.content}), 200
+                    return jsonify({"ai_response": response.choices[0].message.content}), 200
 
-            # Otherwise, insert the summary into the sessions table and continue with the conversation as normal
-            else:
-                db.execute("UPDATE sessions SET session_summary = ? WHERE id = ?",
-                           summary.choices[0].message.content, session_id)
-
-                # Continue with the conversation as normal and get the AI response based on the user input and system prompt
-                user_prompt = user_input
-                response = model_call(system_prompt, user_prompt)
-
-                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
-                           session_id, "assistant", response.choices[0].message.content)
-                return jsonify({"ai_response": response.choices[0].message.content}), 200
-
-        # otherwise, when session_summary != None, insert the user input and AI response into messages
-        else:
-            chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
-
-            # Build messages list for contextualizing the conversation for the API
-            messages = [{"role": "system", "content": system_prompt}]
-
-            # Add chat history to messages list
-            for message in chat_history:
-                messages.append({"role": message["role"], "content": message["content"]})
-
-            messages.append({"role": "user", "content": user_input})
-
-            response = client.chat.completions.create(
-                model="openai/gpt-oss-120b",
-                messages=messages
-            )
-
-            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
-                       session_id, "user", user_input)
-            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
-                       session_id, "assistant", response.choices[0].message.content)
-
-            message_count = db.execute(
-                "SELECT COUNT(*) as count FROM messages WHERE session_id = ?", session_id)[0]["count"]
-
-            # To delay API call for topic generation
-            if message_count % 5 == 0:
-                # Get last 10 messages from history
-                recent_messages = db.execute(
-                    "SELECT role, content FROM messages WHERE session_id = ? ORDER BY created_at DESC LIMIT 10", session_id)
-
-                # Reverse so chronological order
-                recent_messages = recent_messages[::-1]
-
-                clean_history = [{"role": msg["role"], "content": msg["content"]}
-                                 for msg in recent_messages]
-
-                All_topics = db.execute("SELECT topic FROM topics WHERE user_id = ? AND session_id = ?", session["user_id"], session_id)
-
-                existing_topics = clean_list(All_topics)
-
-                # Feed all messages into the API call and ask for returning all unique topic discussed across all sessions by subject
-                system_prompt = (
-                    f"You need to return all unique topics discussed in the message exchanges."
-                                 f"you are required to return a JSON file as your response. No preamble, no markdown backticks, just raw JSON. "
-                                 f"Already covered topics list: {existing_topics}. Only return NEW topics not already in this list. "
-                                 f"the Topics you return must be widely recognizable by name, such as 'thermodynamics' in science, "
-                                 f"Only generate a topic if it is genuinely distinct from all topics in the existing topics list. Subtopics and variations do not qualify. "
-                                 f"Just return the topic that can encapsulate the entirety of that conversational exchange in it, without losing any relevant change. "
-                                 f"your response must be acurrate and not mix topics from one subject to another, "
-                                 f"If multiple topics are clearly part of the same broader concept, merge them into one. "
-                                 f"For example, backend and frontend development are both Software Development. "
-                                 f"You'll be given message history of all chat sessions they user ever had in the user prompt. "
-                )
-
-                user_prompt = (
-                    f"Now return a JSON array of objects, each with a 'topic' key. No subject keys."
-                              f"Always return a JSON array, even if there is only one topic. Never return a single object."
-                )
-
-                return_type = "JSON"
-
-                Topics = model_call(system_prompt, user_prompt, return_type, history=clean_history)
-
-                # Returns a JSON which is a dict where each key stores a list that stores a dict with keys topic and depth
-                topics = json.loads(Topics.choices[0].message.content)
-                app.logger.info(f"Topics structure: {topics}")
-
-                # Check if the Model returned a list or a single dict object
-                if isinstance(topics, list):
-                    topics_list = topics
-                elif "topic" in topics:
-                    topics_list = [topics]  # single dict, wrap it
+                # Otherwise, insert the summary into the sessions table and continue with the conversation as normal
                 else:
-                    topics_list = list(topics.values())
+                    db.execute("UPDATE sessions SET session_summary = ? WHERE id = ?",
+                                summary_result, session_id)
 
-                for topic in topics_list:
-                    db.execute("INSERT INTO topics (topic, user_id, session_id) VALUES(?, ?, ?)",
-                            topic["topic"], session["user_id"], session_id)
+                    # Continue with the conversation as normal and get the AI response based on the user input and system prompt
+                    user_prompt = user_input
+                    response = model_call(system_prompt, user_prompt)
 
-            return jsonify({"ai_response": response.choices[0].message.content}), 200
+                    db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
+                                session_id, "assistant", response.choices[0].message.content)
+                    return jsonify({"ai_response": response.choices[0].message.content}), 200
+
+            # otherwise, when session_summary != None, insert the user input and AI response into messages
+            else:
+                chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
+
+                # Build messages list for contextualizing the conversation for the API
+                messages = [{"role": "system", "content": system_prompt}]
+
+                # Add chat history to messages list
+                for message in chat_history:
+                    messages.append({"role": message["role"], "content": message["content"]})
+
+                messages.append({"role": "user", "content": user_input})
+
+                response = client.chat.completions.create(
+                    model="openai/gpt-oss-120b",
+                    messages=messages
+                )
+
+                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
+                        session_id, "user", user_input)
+                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
+                        session_id, "assistant", response.choices[0].message.content)
+
+                topics_generator(session_id)
+
+                return jsonify({"ai_response": response.choices[0].message.content}), 200
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
 
-        # Only greet the user if there is no field in messages table for current session_id
-        if not db.execute("SELECT * FROM messages WHERE session_id = ?", session_id):
-            username = db.execute("SELECT username FROM users WHERE id = ?",
-                                  session["user_id"])[0]["username"]
+        if request.args.get("mode") == "<session_id>":
 
-            user_prompt = f"Greet {username} and ask how you can assist them with their studies today."
-            response = model_call(system_prompt, user_prompt)
+            chat_sessions = sessions_history()
 
-            db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
-                       session_id, "assistant", response.choices[0].message.content)
-            chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
-            return render_template("chat_interface.html", session_id=session_id, chat_history=chat_history)
+            # Only greet the user if there is no field in messages table for current session_id
+            if not db.execute("SELECT * FROM messages WHERE session_id = ?", session_id):
+                username = db.execute("SELECT username FROM users WHERE id = ?",
+                                    session["user_id"])[0]["username"]
 
-        # Get chat history from messages table with the session_id and render the chat interface
+                user_prompt = f"Greet {username} and ask how you can assist them with their studies today."
+                response = model_call(system_prompt, user_prompt)
+
+                db.execute("INSERT INTO messages (session_id, role, content) VALUES(?, ?, ?)",
+                        session_id, "assistant", response.choices[0].message.content)
+
+                chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
+
+                return render_template("chat_interface.html", session_id=session_id, chat_history=chat_history, chat_sessions=chat_sessions)
+
+            # Get chat history from messages table with the session_id and render the chat interface
+            else:
+                chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
+                return render_template("chat_interface.html", session_id=session_id, chat_history=chat_history, chat_sessions=chat_sessions)
+
+        elif request.args.get("mode") == "sessions":
+            chat_sessions = sessions_history()
+            return render_template("chat_interface.html", chat_sessions=chat_sessions)
+
         else:
-            chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
-            return render_template("chat_interface.html", session_id=session_id, chat_history=chat_history)
+            rows = db.execute("SELECT * FROM sessions WHERE user_id = ?", session["user_id"])
+            if rows:
+                return render_template("chat_interface.html")
+
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -399,12 +324,12 @@ def login():
     if request.method == "POST":
         # Ensure username was submitted
         if not request.form.get("username"):
-            flash("Username is required", "error")
+            flash("Username is required", "danger")
             return render_template("login.html")
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            flash("Password is required", "error")
+            flash("Password is required", "danger")
             return render_template("login.html")
 
         # Query database for username
@@ -416,7 +341,7 @@ def login():
         if len(rows) != 1 or not check_password_hash(
             rows[0]["password_hash"], request.form.get("password")
         ):
-            flash("Invalid username or password", "error")
+            flash("Invalid username or password", "danger")
             return render_template("login.html")
 
         # Remember which user has logged in
@@ -438,15 +363,15 @@ def register():
     if request.method == "POST":
 
         if not request.form.get("username"):
-            flash("Username is required", "error")
+            flash("Username is required", "danger")
             return render_template("register.html")
 
         elif not request.form.get("password"):
-            flash("Password is required", "error")
+            flash("Password is required", "danger")
             return render_template("register.html")
 
         elif request.form.get("password") != request.form.get("confirmation"):
-            flash("Passwords do not match", "error")
+            flash("Passwords do not match", "danger")
             return render_template("register.html")
 
         hash_pass = generate_password_hash(request.form.get("password"))
@@ -466,7 +391,7 @@ def register():
 
         except ValueError:
 
-            flash("Username already taken", "error")
+            flash("Username already taken", "danger")
             return render_template("register.html")
 
     # User reached route via GET (as by clicking a link or via redirect)
@@ -523,7 +448,8 @@ def dashboard():
                 f"Already connected topic pairs: {existing_connections}. Only return NEW connections not already in this list. "
                 f"Each pair of connected subjects must be seperated by 'and' not '-' or ',' or any other punctuations, "
                 f"if no topics are connected, return an empty JSON object not an empty list, the connected topics must have different subjects. "
-                f"Only generate a connection if the two topics share a direct and non-trivial conceptual overlap. "
+                f"Only generate a connection if the two topics share a direct and non-trivial conceptual overlap. Avoid forcing connections, "
+                f"Return connections that has meaningful overlap and is genuinely study-able on it's own, not connections that just have some similar aspects but are largly unrelated. "
                 f"Do not generate connections based on loose thematic similarity or forced analogies. If you have to stretch to make the connection, do not include it. "
                 f"A valid connection is one that a professor teaching both subjects would assign as a cross-disciplinary reading."
             )
@@ -541,12 +467,10 @@ def dashboard():
                     db.execute("INSERT INTO connections (user_id, subjects, connection, summary) VALUES(?, ?, ?, ?)",
                             session["user_id"], connections["subjects"], connections["connection"], connections["summary"])
 
-            app.logger.info(f"Connection: {Connection.choices[0].message.content}")
-
             return redirect("/dashboard")
 
         else:
-            flash("No topics to generate connections yet!", "error")
+            flash("No topics to generate connections yet!", "danger")
             return redirect("/dashboard")
 
     # User reached the route via GET
