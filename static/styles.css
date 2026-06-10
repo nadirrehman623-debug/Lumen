@@ -1,61 +1,69 @@
-/* Basic Stylesheet */
+.navbar-brand {
+    font-family: 'Playfair Display', serif;
+    color: #e8e8e8;
+    background-color: #211e19;
+    font-size: 1.5rem;
+    margin-left: 2rem;
+}
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+.bg-light {
+    font-family: 'EB Garamond', Garamond;
+    background-color: #211e19 !important;
+
+}
+
+.nav-link {
+    color: #e8e8e8 !important;
+    font-size: 1rem;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
-    line-height: 1.6;
+    background-color: #1a1814;
+    color: #f0f0f0;
+    padding: 0;
+    font-size: 1.2rem;
+    font-family: 'EB Garamond', Garamond;
 }
 
-main {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+#delete-icon {
+    background-color: #1a1814;
 }
 
-button, input[type="submit"] {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+img {
+    background-color: #1a1814;
 }
 
-button:hover, input[type="submit"]:hover {
-    background-color: #0056b3;
+.chat-page {
+    padding: 0;
+    max-width: 100%;
 }
 
-input, textarea {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
+.list {
+    justify-content: left;
+    background-color: #1a1814;
+    color: #f0f0f0;
+    font-size: 1rem;
 }
 
 a {
-    color: #007bff;
+    color: #9e1a1a;
     text-decoration: none;
 }
 
-a:hover {
-    text-decoration: underline;
+.table {
+    background-color: #1a1814;
+    color: #e8e8e8;
 }
 
-.text-left {
-    text-align: left;
+.table td, .table th {
+     background-color: #1a1814;
+     color: #e8e8e8;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #242018;
 }
 
 button {
     margin-top: 2rem;
-}
-
-.spinner-grow {
-    margin: 2rem;
 }

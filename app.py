@@ -61,7 +61,7 @@ def index():
         rows = db.execute("SELECT subject FROM subjects WHERE user_id = ?", session["user_id"])
         # if user already have subjects selected
         if rows:
-            return redirect("/chat")
+            return redirect("/chat/history")
         # if user just logged in
         else:
             return redirect("/setup?mode=new_chat")
@@ -98,7 +98,7 @@ def setup():
                 if selected_subject:
                     flash("New chat session started", "success")
 
-                return redirect(f"/chat?mode={session_id}")
+                return redirect(f"/chat?mode=session_{session_id}")
 
             # if the selected subject is not in subjects table with current user's id
             else:
@@ -113,7 +113,7 @@ def setup():
                 if selected_subject:
                     flash("New chat session started", "success")
 
-                return redirect(f"/chat?mode={session_id}")
+                return redirect(f"/chat?mode=session_{session_id}")
 
         elif request.args.get("mode") == "getting_started":
 
@@ -159,12 +159,20 @@ def setup():
 
 @app.route("/chat", methods=["GET", "POST"])
 @login_required
-def chat(session_id):
+def chat():
     """ Chat interface """
 
-    # Fetch the selected subject for the current chat session from sessions table with the session_id
-    selected_subject = db.execute("SELECT subject FROM subjects WHERE id = ?",
-                                  db.execute("SELECT subject_id FROM sessions WHERE id = ?", session_id)[0]["subject_id"])[0]["subject"]
+    mode = request.args.get("mode")
+
+    if mode and mode.startswith("session_"):
+
+        session_id = int(mode.split("_")[1])
+
+        # Fetch the selected subject for the current chat session from sessions table with the session_id
+        selected_subject = db.execute("SELECT subject FROM subjects WHERE id = ?",
+                                    db.execute("SELECT subject_id FROM sessions WHERE id = ?", session_id)[0]["subject_id"])[0]["subject"]
+    else:
+        selected_subject = "None"
 
     user_difficulty = db.execute("SELECT difficulty FROM users WHERE id = ?", session["user_id"])[0]["difficulty"]
     Learning_style = db.execute("SELECT learning_style FROM users WHERE id = ?", session["user_id"])[0]["learning_style"]
@@ -194,12 +202,12 @@ def chat(session_id):
     # User reached route via POST
     if request.method == "POST":
 
-        if request.args.get("mode") == "sessions":
+        if mode == "sessions":
             # if user clicked start new chat button
             if "new_chat" in request.form:
                 return redirect("/setup?mode=new_chat")
 
-        elif request.args.get("mode") == "<session_id>":
+        elif mode and mode.startswith("session_"):
 
             # check if the session_id is valid and belongs to the current user
             if not db.execute("SELECT * FROM sessions WHERE id = ? AND user_id = ?", session_id, session["user_id"]):
@@ -277,7 +285,7 @@ def chat(session_id):
     # User reached route via GET (as by clicking a link or via redirect)
     else:
 
-        if request.args.get("mode") == "<session_id>":
+        if mode and mode.startswith("session_"):
 
             chat_sessions = sessions_history()
 
@@ -301,15 +309,24 @@ def chat(session_id):
                 chat_history = db.execute("SELECT * FROM messages WHERE session_id = ?", session_id)
                 return render_template("chat_interface.html", session_id=session_id, chat_history=chat_history, chat_sessions=chat_sessions)
 
-        elif request.args.get("mode") == "sessions":
+        elif mode == "sessions":
             chat_sessions = sessions_history()
             return render_template("chat_interface.html", chat_sessions=chat_sessions)
 
         else:
             rows = db.execute("SELECT * FROM sessions WHERE user_id = ?", session["user_id"])
-            if rows:
+            if not rows:
                 return render_template("chat_interface.html")
+            else:
+                return redirect("/chat?mode=sessions")
 
+
+@app.route("/chat/history")
+@login_required
+def chat_history():
+    """ Display All sessions alognside the subjects and the time """
+    chat_sessions = sessions_history()
+    return render_template("chat_history.html", chat_sessions=chat_sessions)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -411,10 +428,10 @@ def logout():
     return redirect("/")
 
 
-@app.route("/dashboard", methods=["GET", "POST"])
+@app.route("/Correlations", methods=["GET", "POST"])
 @login_required
-def dashboard():
-    """ Display user stats """
+def Correlations():
+    """ Display Correlation between Topics """
 
     # if User reached the route via POST
     if request.method == "POST":
@@ -439,13 +456,13 @@ def dashboard():
             connected_topics = db.execute("SELECT connection FROM connections WHERE user_id = ?", session["user_id"])
 
             # Clean list of connected topics
-            existing_connections = clean_list(connected_topics)
+            existing_correlations = clean_list(connected_topics)
 
             system_prompt = (
                 f"You will be given a list of topics, and the subject they were discussed in, Your task is to return connecting topics across subjects in a JSON file, "
                 f"Always return a JSON array, and within that file, subjects, connection and summary as keys to the name of subjects that are connected, "
                 f"the topics that are connected and a concise 1-2 paragraph summary of how the topics connect as their values. and the values must be strings, not lists. "
-                f"Already connected topic pairs: {existing_connections}. Only return NEW connections not already in this list. "
+                f"Already connected topic pairs: {existing_correlations}. Only return NEW connections not already in this list. "
                 f"Each pair of connected subjects must be seperated by 'and' not '-' or ',' or any other punctuations, "
                 f"if no topics are connected, return an empty JSON object not an empty list, the connected topics must have different subjects. "
                 f"Only generate a connection if the two topics share a direct and non-trivial conceptual overlap. Avoid forcing connections, "
@@ -454,42 +471,52 @@ def dashboard():
                 f"A valid connection is one that a professor teaching both subjects would assign as a cross-disciplinary reading."
             )
 
-            Connection = model_call(system_prompt, user_prompt, return_type="JSON")
+            Correlation = model_call(system_prompt, user_prompt, return_type="JSON")
 
-            connections = json.loads(Connection.choices[0].message.content)
+            Correlations = json.loads(Correlation.choices[0].message.content)
 
             # Check if the Model returned a list or a dict object
-            if isinstance(connections, list):
+            if isinstance(Correlations, list):
                 db.execute("INSERT INTO connections (user_id, subjects, connection, summary) VALUES(?, ?, ?, ?)",
-                        session["user_id"], connections[0]["subjects"], connections[0]["connection"], connections[0]["summary"])
+                        session["user_id"], Correlations[0]["subjects"], Correlations[0]["connection"], Correlations[0]["summary"])
             else:
-                if connections:
+                if Correlations:
                     db.execute("INSERT INTO connections (user_id, subjects, connection, summary) VALUES(?, ?, ?, ?)",
-                            session["user_id"], connections["subjects"], connections["connection"], connections["summary"])
+                            session["user_id"], Correlations["subjects"], Correlations["connection"], Correlations["summary"])
 
-            return redirect("/dashboard")
+            return redirect("/Correlations")
 
         else:
-            flash("No topics to generate connections yet!", "danger")
-            return redirect("/dashboard")
+            flash("No topics to generate Correlations yet!", "danger")
+            return redirect("/Correlations")
 
     # User reached the route via GET
     else:
-        subjects_enrolled = db.execute(
+
+        Correlations = db.execute("SELECT * FROM connections WHERE user_id = ?", session["user_id"])
+
+        # Storing all Correlations that share same pair of subjects together
+        grouped = {}
+        for corr in Correlations:
+            key = corr["subjects"]
+            grouped.setdefault(key, []).append(corr)
+
+
+        return render_template("Correlations.html", Correlations=grouped)
+
+
+@app.route("/dashboard")
+@login_required
+def dashboard():
+    """ Display user info """
+
+    subjects_enrolled = db.execute(
             "SELECT DISTINCT subject FROM subjects WHERE user_id = ?", session["user_id"])
 
-        # Get all active sessions per subject the user currently have
-        sessions_bysubjects = (db.execute(
-            "SELECT subjects.subject, COUNT(sessions.id) as session_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? GROUP BY subjects.subject", session["user_id"]))
+    # Get all active sessions per subject the user currently have
+    sessions_bysubjects = (db.execute(
+        "SELECT subjects.subject, COUNT(sessions.id) as session_count FROM sessions JOIN subjects ON sessions.subject_id = subjects.id WHERE sessions.user_id = ? GROUP BY subjects.subject", session["user_id"]))
 
-        connections = db.execute("SELECT * FROM connections WHERE user_id = ?", session["user_id"])
+    user_info = db.execute("SELECT username, difficulty, learning_style, Goal FROM users WHERE id = ?", session["user_id"])
 
-        # Storing all connections that share same pair of subjects together
-        grouped = {}
-        for conn in connections:
-            key = conn["subjects"]
-            grouped.setdefault(key, []).append(conn)
-
-        user_info = db.execute("SELECT username, difficulty, learning_style, Goal FROM users WHERE id = ?", session["user_id"])
-
-        return render_template("dashboard.html", subjects=subjects_enrolled, sessions=sessions_bysubjects, connections=grouped, user_info=user_info, difficulty=difficulty, Learning_styles=Learning_styles, Goals=Goals)
+    return render_template("dashboard.html",  subjects=subjects_enrolled, sessions=sessions_bysubjects, user_info=user_info, difficulty=difficulty, Learning_styles=Learning_styles, Goals=Goals)
