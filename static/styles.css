@@ -303,7 +303,8 @@ textarea:focus {
     background-color: #211e19;
     border-radius: 6px;
     border: 1px solid #2e2a24;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, opacity 0.2s ease;
+
 }
 
 .history-item:hover {
@@ -339,4 +340,8 @@ textarea:focus {
     color: #888;
     text-align: center;
     margin-top: 3rem;
+}
+
+.history-item.hidden {
+    display: none;
 }
