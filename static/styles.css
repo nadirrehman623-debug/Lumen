@@ -199,3 +199,62 @@ input[type="search"]:focus,
 textarea:focus {
     border-color: #9e1a1a;
 }
+
+
+.auth-container {
+    max-width: 400px;
+    margin: 4rem auto;
+    text-align: center;
+}
+
+.auth-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    color: #e8e8e8;
+}
+
+.auth-input {
+    width: 100%;
+    background-color: #211e19;
+    color: #e8e8e8;
+    border: 1px solid #3a3530;
+    border-radius: 6px;
+    padding: 0.5rem 0.9rem;
+    font-family: 'EB Garamond', Garamond;
+    font-size: 1rem;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.auth-input:focus {
+    border-color: #9e1a1a;
+}
+
+.auth-input::placeholder {
+    color: #888;
+}
+
+.auth-submit {
+    width: 100%;
+    background-color: #9e1a1a;
+    color: #e8e8e8;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-family: 'EB Garamond', Garamond;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-top: 0.5rem;
+}
+
+.auth-submit:hover {
+    background-color: #7a1414;
+}
+
+.auth-switch {
+    margin-top: 1.2rem;
+    font-size: 0.95rem;
+    color: #888;
+}
