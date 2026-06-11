@@ -31,4 +31,15 @@
         <p class="history-empty">No chat history yet. Start a new chat to see your sessions here.</p>
     {% endif %}
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('historySearch').addEventListener('input', function() {
+            const query = this.value.toLowerCase();
+            document.querySelectorAll('.history-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(query) ? '' : 'none';
+            });
+        });
+    });
+</script>
 {% endblock %}
