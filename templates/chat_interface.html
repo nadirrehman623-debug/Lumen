@@ -25,8 +25,14 @@
             <input type="submit" value="New Chat" name="new_chat" class="auth-submit">
         </form>
     </div>
-    
+
     <div class="chat-main">
+        <div class="chat-header">
+        <h2 class="history-heading">Recent Chats</h2>
+        <form method="post" action="/chat?mode=sessions">
+            <input type="submit" value="New Chat" name="new_chat" class="auth-submit history-new-chat">
+        </form>
+    </div>
         {% if chat_history %}
 
             <div id="chat-history" class="chat-messages">
