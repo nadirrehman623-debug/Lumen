@@ -5,59 +5,70 @@
 {% endblock %}
 
 {% block main %}
-<div class="d-flex" style="height: 90vh;">
-<div id="sessions" style="width: 25%; overflow-y: auto;">
-    {% if chat_sessions %}
-        <ul class="list" style="text-align:left;">
-            <li class="list-item-disabled" aria-disabled="true">Recent Chats</li>
-        {% for session in chat_sessions|reverse %}
-            <li class="list-group-item">
-                <a href="/chat?mode=session_{{ session.id }}">{% if session.session_summary == None %} New session {% else %} {{ session.session_summary }} {% endif %}</a>
-            </li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <div class="spinner-grow text-light" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <p>No chat history found. Start a new chat to see your history here.</p>
-    {% endif %}
-    <form method="post" action="/chat?mode=sessions">
-        <input type="submit" value="Start New Chat" name="new_chat">
-    </form>
+<div class="chat-layout">
+
+    <!-- Sidebar -->
+    <div class="chat-sidebar">
+        <p class="sidebar-heading">Recent Chats</p>
+        {% if chat_sessions %}
+            <ul class="sidebar-list">
+                {% for session in chat_sessions|reverse %}
+                <li class="sidebar-item">
+                    <a href="/chat?mode=session_{{ session.id }}" class="sidebar-link">
+                        {% if session.session_summary == None %}New session{% else %}{{ session.session_summary }}{% endif %}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="sidebar-empty">No sessions yet.</p>
+        {% endif %}
+        <form method="post" action="/chat?mode=sessions" class="sidebar-form">
+            <input type="submit" value="New Chat" name="new_chat" class="auth-submit">
+        </form>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="chat-main">
+        {% if chat_history %}
+
+            <div id="chat-history" class="chat-messages">
+                {% for message in chat_history %}
+                <div class="chat-bubble {{ message.role }}">
+                    <span class="bubble-label">{{ "You" if message.role == "user" else "Lumen" }}</span>
+                    <p class="bubble-text">{{ message.content }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="chat-input-bar">
+                <p class="chat-disclaimer">Lumen can sometimes make mistakes. Reset the session if it misbehaves.</p>
+                <form method="post" action="/chat?mode=session_{{ session_id }}" id="chat-form">
+                    <div class="chat-input-row">
+                        <input type="text" autocomplete="off" class="auth-input" id="user-input" name="user_input" placeholder="Type your message..." required>
+                        <button type="submit" class="chat-send-btn">Send</button>
+                    </div>
+                </form>
+            </div>
+
+        {% else %}
+            <div class="chat-empty">
+                <h2 class="chat-empty-heading">Welcome to Lumen</h2>
+                <p class="chat-empty-sub">Start a new chat to begin your learning journey.</p>
+            </div>
+        {% endif %}
+    </div>
+
 </div>
 
-<div style="width: 75%; display: flex; flex-direction: column; height: 100%;">
-{% if chat_history %}
-<div id="chat-history" class="d-flex flex-column gap-3 mb-4"  style="flex: 1; overflow-y: auto;">
-        {% for message in chat_history %}
-        <div class="message {{ message.role }}">
-            {{ "You" if message.role == "user" else "Lumen" }}: {{ message.content }}
-        </div>
-        {% endfor %}
-    </div>
-    <form method="post" action="/chat?mode=session_{{ session_id }}" id="chat-form">
-        <div class="mb-3">
-            <label for="user-input" class="form-label">Your Message:</label>
-            <input type="text" autocomplete="off" class="form-control" id="user-input" name="user_input" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Send</button>
-    </form>
-{% else %}
-    <div class="d-flex flex-column gap-3 mb-4" style="flex-direction: top;">
-        <h1>Welcome to Lumen...</h1>
-        <p>Click on New chat to start your Learning journey!</p>
-    </div>
-{% endif %}
-</div>
-    <script>
-        const chatForm = document.getElementById('chat-form');
-        const chatHistory = document.getElementById('chat-history');
-        const sessionId = "{{ session_id }}";
+<script>
+    const chatForm = document.getElementById('chat-form');
+    const chatHistory = document.getElementById('chat-history');
+    const sessionId = "{{ session_id }}";
 
+    if (chatForm) {
         chatForm.addEventListener('submit', function(e) {
-            e.preventDefault();  // stop the form from reloading the page
-
+            e.preventDefault();
             const userInput = document.getElementById('user-input').value;
 
             fetch(`/chat/${sessionId}`, {
@@ -67,19 +78,25 @@
             })
             .then(response => response.json())
             .then(data => {
-                // append user message
                 const userDiv = document.createElement('div');
-                userDiv.innerText = `You: ${userInput}`;
+                userDiv.classList.add('chat-bubble', 'user');
+                userDiv.innerHTML = `<span class="bubble-label">You</span><p class="bubble-text">${userInput}</p>`;
                 chatHistory.appendChild(userDiv);
 
-                // append AI response
                 const aiDiv = document.createElement('div');
-                aiDiv.innerText = `Lumen: ${data.ai_response}`;
+                aiDiv.classList.add('chat-bubble', 'assistant');
+                aiDiv.innerHTML = `<span class="bubble-label">Lumen</span><p class="bubble-text">${data.ai_response}</p>`;
                 chatHistory.appendChild(aiDiv);
 
-                // clear input field
                 document.getElementById('user-input').value = '';
-            })
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            });
         });
-    </script>
+
+        // scroll to bottom on load
+        if (chatHistory) {
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+    }
+</script>
 {% endblock %}
