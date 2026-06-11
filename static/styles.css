@@ -162,3 +162,40 @@ a {
     line-height: 1.8;
     margin: 0;
 }
+
+input[type="submit"] {
+    background-color: #9e1a1a;
+    color: #e8e8e8;
+    border: none;
+    padding: 0.4rem 1.1rem;
+    border-radius: 6px;
+    font-family: 'EB Garamond', Garamond;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+input[type="submit"]:hover {
+    background-color: #7a1414;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="search"],
+textarea {
+    background-color: #211e19;
+    color: #e8e8e8;
+    border: 1px solid #3a3530;
+    border-radius: 6px;
+    padding: 0.4rem 0.8rem;
+    font-family: 'EB Garamond', Garamond;
+    font-size: 1rem;
+    outline: none;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+textarea:focus {
+    border-color: #9e1a1a;
+}
