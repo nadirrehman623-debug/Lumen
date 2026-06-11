@@ -27,15 +27,17 @@
     </div>
 
     <div class="chat-main">
-        <div class="chat-header">
-        <form method="post" action="/chat?mode=sessions">
-            <input type="submit" value="Delete" name="Delete" class="auth-submit chat-delete">
-        </form>
-    </div>
         {% if chat_history %}
 
             <div id="chat-history" class="chat-messages">
                 {% for message in chat_history %}
+                {% if loop.index == 0 %}
+                <div class="chat-header">
+                    <form method="post" action="/chat?mode=sessions">
+                        <input type="submit" value="Delete" name="{{ session_id }}" class="auth-submit chat-delete">
+                    </form>
+                </div>
+                {% endif %}
                 <div class="chat-bubble {{ message.role }}">
                     <span class="bubble-label">{{ "You" if message.role == "user" else "Lumen" }}</span>
                     <p class="bubble-text">{{ message.content }}</p>
