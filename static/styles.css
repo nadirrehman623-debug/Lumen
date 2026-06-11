@@ -392,6 +392,9 @@ textarea:focus {
     padding: 0.4rem 0.5rem;
     border-radius: 4px;
     transition: background-color 0.15s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .sidebar-item:hover {
