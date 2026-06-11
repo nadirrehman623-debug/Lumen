@@ -46,7 +46,7 @@ img {
 }
 
 a {
-    color: #9e1a1a;
+    color: #e8e8e8;
     text-decoration: none;
 }
 
@@ -64,6 +64,7 @@ a {
     background-color: #242018;
 }
 
-button {
-    margin-top: 2rem;
+#register-link, #login-link {
+    color: #9e1a1a;
+    text-decoration: none;
 }
