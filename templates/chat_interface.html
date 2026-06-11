@@ -62,14 +62,14 @@
 <script>
     const chatForm = document.getElementById('chat-form');
     const chatHistory = document.getElementById('chat-history');
-    const sessionId = "?mode=session_{{ session_id }}";
+    const sessionId = "{{ session_id }}";
 
     if (chatForm) {
         chatForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const userInput = document.getElementById('user-input').value;
 
-            fetch(`/chat${sessionId}`, {
+            fetch(`/chat?mode=session_${sessionId}, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({user_input: userInput})
