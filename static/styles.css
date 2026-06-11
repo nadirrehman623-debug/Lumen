@@ -93,7 +93,7 @@ a {
 .index-hero {
     max-width: 720px;
     margin: 0 auto;
-    padding: 5rem 1.5rem 3rem;
+    padding: 4rem 1.2rem 2rem;
     text-align: center;
 }
 
@@ -104,7 +104,7 @@ a {
 }
 
 .index-description {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     line-height: 1.9;
     color: #c8c8c8;
     margin-bottom: 2.5rem;
