@@ -207,6 +207,15 @@ def chat():
             if "new_chat" in request.form:
                 return redirect("/setup?mode=new_chat")
 
+            sessions_ids = db.execute("SELECT id FROM sessions WHERE user_id = ?", session["user_id"])
+
+            session_ids = clean_list(sessions_ids) # get the values only!
+
+            for id in session_ids:
+                if id in request.form:
+                    db.execute("DELETE FROM sessions WHERE id = ?", id)
+                    return redirect("/chat")
+
         elif mode and mode.startswith("session_"):
 
             # check if the session_id is valid and belongs to the current user
