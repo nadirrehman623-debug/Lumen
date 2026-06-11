@@ -214,7 +214,7 @@ def chat():
             for id in session_ids:
                 if id in request.form:
                     db.execute("DELETE FROM sessions WHERE id = ?", id)
-                    return redirect("/chat")
+                    return redirect("/chat?mode=sessions")
 
         elif mode and mode.startswith("session_"):
 
