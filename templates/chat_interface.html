@@ -69,7 +69,7 @@
             e.preventDefault();
             const userInput = document.getElementById('user-input').value;
 
-            fetch(`/chat?mode=session_${sessionId}, {
+            fetch(`/chat?mode=session_${sessionId}`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({user_input: userInput})
