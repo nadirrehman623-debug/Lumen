@@ -28,7 +28,12 @@
             {% endfor %}
         </div>
     {% else %}
-        <p class="history-empty">No chat history yet. Start a new chat to see your sessions here.</p>
+    <div class="history-empty">
+        <div class="spinner-grow text-light" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p>No chat history yet. Start a new chat to see your sessions here.</p>
+    </div>
     {% endif %}
 </div>
 <script>
