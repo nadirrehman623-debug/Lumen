@@ -37,7 +37,15 @@
             const query = this.value.toLowerCase();
             document.querySelectorAll('.history-item').forEach(item => {
                 const text = item.textContent.toLowerCase();
-                item.style.display = text.includes(query) ? '' : 'none';
+                if (text.includes(query)) {
+                    item.style.opacity = '1';
+                    item.style.pointerEvents = '';
+                    setTimeout(() => item.classList.remove('hidden'), 0);
+                } else {
+                    item.style.opacity = '0';
+                    item.style.pointerEvents = 'none';
+                    setTimeout(() => item.classList.add('hidden'), 200);
+                }
             });
         });
     });
