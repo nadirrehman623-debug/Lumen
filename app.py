@@ -25,7 +25,7 @@ client = OpenAI(
     base_url="https://api.groq.com/openai/v1"
 )
 
-# List of all valid subjects for users to choose from when setting up their account
+# List of all valid subjects for users to choose from
 subjects = ["Math", "Philosophy", "Computer Science", "Biology", "Chemistry",
             "Physics", "History", "Literature", "Linguistics"]
 
