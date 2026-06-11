@@ -89,3 +89,45 @@ a {
     font-size: 0.95rem;
     font-family: 'EB Garamond', Garamond;
 }
+
+.index-hero {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 5rem 1.5rem 3rem;
+    text-align: center;
+}
+
+.index-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    margin-bottom: 2rem;
+}
+
+.index-description {
+    font-size: 1.1rem;
+    line-height: 1.9;
+    color: #c8c8c8;
+    margin-bottom: 2.5rem;
+}
+
+.subjects-section {
+    margin-bottom: 2.5rem;
+}
+
+.subjects-label {
+    font-size: 0.95rem;
+    color: #888;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+}
+
+.index-cta {
+    font-size: 1rem;
+    color: #aaa;
+}
+
+.accent-link {
+    color: #9e1a1a !important;
+    text-decoration: none;
+}

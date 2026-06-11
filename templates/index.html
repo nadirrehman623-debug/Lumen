@@ -5,16 +5,17 @@
 {% endblock %}
 
 {% block main %}
-    <h1 class="text-center">Lumen, think further.</h1>
-    <p class="text-center">Lumen is an AI-powered Socratic learning platform.
+<div class="index-hero">
+    <h1 class="index-heading">Lumen, think further.</h1>
+    <p class="index-description">Lumen is an AI-powered Socratic learning platform.
         Instead of feeding you the answers, it asks you the right questions that
         guide your mind to reason through problems and build a "map" of understanding that sticks.
         The goal is something bigger than simple memorization of concepts, to inspire a kind of polymathic intuition,
         where ideas across subjects start to connect and inform each other —
         and may eventually lead the learner to uncharted territories,
         the edges, because that is where knowledge becomes larger than being trapped within the scope of one subject.</p>
-    <div class="text-center mb-4">
-        <p class="mb-3">Subjects covered</p>
+    <div class="subjects-section">
+        <p class="subjects-label">Subjects covered</p>
         <div class="subject-pills">
             <span class="subject-pill">Math</span>
             <span class="subject-pill">Philosophy</span>
@@ -26,6 +27,7 @@
             <span class="subject-pill">Literature</span>
             <span class="subject-pill">Linguistics</span>
         </div>
-        </div
-        <p class="text-center">To get started, please <a href="/register">register</a> for an account or <a href="/login">log in</a> if you already have one.</p>
+    </div>
+    <p class="index-cta">To get started, please <a class="accent-link" href="/register">register</a> for an account or <a class="accent-link" href="/login">log in</a> if you already have one.</p>
+</div>
 {% endblock %}
