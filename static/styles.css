@@ -73,3 +73,18 @@ a {
     background-color: #1a1814;
     color: #e8e8e8;
 }
+
+.subject-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+}
+
+.subject-pill {
+    border: 1px solid #9e1a1a;
+    color: #e8e8e8;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    font-family: 'EB Garamond', Garamond;
