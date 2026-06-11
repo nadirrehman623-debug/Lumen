@@ -91,7 +91,7 @@ a {
 }
 
 .index-hero {
-    max-width: 860px;
+    max-width: 920px;
     margin: 0 auto;
     padding: 2.5rem 1.2rem 3rem;
     text-align: center;
@@ -130,4 +130,35 @@ a {
 .accent-link {
     color: #9e1a1a !important;
     text-decoration: none;
+}
+
+.faq-section {
+    margin-top: 3rem;
+    margin-bottom: 2rem;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
+}
+
+.faq-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: #e8e8e8;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.05em;
+}
+
+.faq-question {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: #e8e8e8;
+    margin-bottom: 0.4rem;
+}
+
+.faq-answer {
+    font-size: 1rem;
+    color: #c8c8c8;
+    line-height: 1.8;
+    margin: 0;
 }
