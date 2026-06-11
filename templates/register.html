@@ -5,16 +5,19 @@
 {% endblock %}
 
 {% block main %}
+<div class="auth-container">
+    <h2 class="auth-heading">Welcome to Lumen,</h2>
     <form action="/register" method="post">
         <div class="mb-3">
-            <input autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Username" type="text">
+            <input autocomplete="off" autofocus class="auth-input" name="username" placeholder="Username" type="text">
         </div>
         <div class="mb-3">
-            <input class="form-control mx-auto w-auto" name="password" placeholder="Password" type="password">
+            <input class="auth-input" name="password" placeholder="Password" type="password">
         </div>
         <div class="mb-3">
-            <input class="form-control mx-auto w-auto" name="confirmation" placeholder="Confirm Password" type="password">
+            <input class="auth-input" name="confirmation" placeholder="Confirm Password" type="password">
         </div>
-        <button class="btn btn-primary" type="submit">Register</button>
+        <input class="auth-submit" type="submit" value="Register">
     </form>
+    <p class="auth-switch">Already have an account? <a class="accent-link" href="/login">Login</a></p>
 {% endblock %}
