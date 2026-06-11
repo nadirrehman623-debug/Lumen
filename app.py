@@ -74,9 +74,7 @@ def setup():
         # if user reached route via new_chat mode
         if request.args.get("mode") == "new_chat":
 
-            # Get user's selected subject
             selected_subject = request.form.get("subject")
-            app.logger.info(selected_subject)
 
             if not selected_subject:
                 flash("Subject is required", "danger")
