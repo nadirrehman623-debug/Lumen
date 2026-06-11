@@ -428,12 +428,6 @@ textarea:focus {
     overflow: hidden;
 }
 
-.chat-header {
-    display: flex;
-    justify-content: right;
-    margin-bottom: 1.2rem;
-}
-
 .chat-messages {
     flex: 1;
     overflow-y: auto;
