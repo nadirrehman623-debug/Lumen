@@ -6,8 +6,6 @@
 
 {% block main %}
 <div class="chat-layout">
-
-    <!-- Sidebar -->
     <div class="chat-sidebar">
         <p class="sidebar-heading">Recent Chats</p>
         {% if chat_sessions %}
@@ -27,8 +25,7 @@
             <input type="submit" value="New Chat" name="new_chat" class="auth-submit">
         </form>
     </div>
-
-    <!-- Main Chat Area -->
+    
     <div class="chat-main">
         {% if chat_history %}
 
