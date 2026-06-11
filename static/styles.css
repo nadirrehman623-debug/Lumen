@@ -68,3 +68,8 @@ a {
     color: #9e1a1a;
     text-decoration: none;
 }
+
+.accordion accordion-flush {
+    background-color: #1a1814;
+    color: #e8e8e8;
+}
