@@ -31,7 +31,7 @@
 
             <div id="chat-history" class="chat-messages">
                 {% for message in chat_history %}
-                {% if loop.index == 0 %}
+                {% if loop.index == 1 %}
                 <div class="chat-header">
                     <form method="post" action="/chat?mode=sessions">
                         <input type="submit" value="Delete" name="{{ session_id }}" class="auth-submit chat-delete">
