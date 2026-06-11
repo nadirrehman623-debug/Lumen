@@ -15,6 +15,11 @@
                     <a href="/chat?mode=session_{{ session.id }}" class="sidebar-link">
                         {% if session.session_summary == None %}New session{% else %}{{ session.session_summary }}{% endif %}
                     </a>
+                    <form method="post" action="/chat?mode=sessions" class="item-form">
+                        <select class="item-options">
+                            <input type="submit" value="Delete-item" name="{{ session.id }}" class="auth-submit-delete" hidden>
+                        </select>
+                    </form>
                 </li>
                 {% endfor %}
             </ul>
